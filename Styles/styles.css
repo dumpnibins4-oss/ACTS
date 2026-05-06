@@ -1,0 +1,13 @@
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+
+.font-geist {
+  font-family: "Geist", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
