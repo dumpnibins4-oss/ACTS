@@ -11,3 +11,13 @@ body {
   font-weight: 300;
   font-style: normal;
 }
+
+/* login.php Page Animations */
+@keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(-2deg); } }
+@keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(1.5deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } }
+@keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
+@keyframes float4 { 0%, 100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-9px) rotate(2deg); } }
+.card-1 { animation: float1 4.5s ease-in-out infinite; }
+.card-2 { animation: float2 5s ease-in-out infinite 0.6s; }
+.card-3 { animation: float3 4s ease-in-out infinite 1.1s; }
+.card-4 { animation: float4 5.2s ease-in-out infinite 0.3s; }

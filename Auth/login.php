@@ -19,17 +19,9 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- CSS -->
+        <link rel="stylesheet" href="../Styles/styles.css">
         <title>ACTS | Login</title>
-        <style>
-            @keyframes float1 { 0%, 100% { transform: translateY(0px) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(-2deg); } }
-            @keyframes float2 { 0%, 100% { transform: translateY(0px) rotate(1.5deg); } 50% { transform: translateY(-10px) rotate(1.5deg); } }
-            @keyframes float3 { 0%, 100% { transform: translateY(0px) rotate(-1deg); } 50% { transform: translateY(-7px) rotate(-1deg); } }
-            @keyframes float4 { 0%, 100% { transform: translateY(0px) rotate(2deg); } 50% { transform: translateY(-9px) rotate(2deg); } }
-            .card-1 { animation: float1 4.5s ease-in-out infinite; }
-            .card-2 { animation: float2 5s ease-in-out infinite 0.6s; }
-            .card-3 { animation: float3 4s ease-in-out infinite 1.1s; }
-            .card-4 { animation: float4 5.2s ease-in-out infinite 0.3s; }
-        </style>
     </head>
     <body>
         <div class="flex items-center justify-center h-screen w-screen bg-linear-to-br from-indigo-100 via-purple-100 to-sky-100 font-[Geist,sans-serif]">
@@ -177,7 +169,6 @@
                                 <span class="text-[10px] px-2 py-0.5 rounded-full bg-green-500/15 text-green-400">On time</span>
                             </div>
                         </div>
-
                     </div>
 
                     <!-- Tagline -->
@@ -187,73 +178,10 @@
                             One dashboard for every step<br>of your support workflow.
                         </p>
                     </div>
-
                 </div>
-
             </div>
         </div>
-
-        <script>
-            // Password toggler
-            function togglePassword() {
-                var password = document.getElementById("password")
-                var eye = document.getElementById("eye")
-                if (password.type === "password") {
-                    password.type = "text"
-                    eye.classList.remove("fa-eye")
-                    eye.classList.add("fa-eye-slash")
-                } else {
-                    password.type = "password"
-                    eye.classList.remove("fa-eye-slash")
-                    eye.classList.add("fa-eye")
-                }
-            }
-
-            // Login form handler
-            document.getElementById("login-form").addEventListener("submit", async (e) => {
-                e.preventDefault()
-                const formData = new FormData(e.target)
-
-                // Loading state
-                const submitBtn = document.getElementById("submit-btn")
-                const loadingSpinner = document.getElementById("loading-spinner")
-                const submitBtnText = document.getElementById("submit-btn-text")
-                submitBtn.disabled = true
-                loadingSpinner.classList.remove("hidden")
-                submitBtnText.textContent = "Authenticating..."
-
-                try {
-                    const response = await fetch("../API/login-api.php", {
-                        method: "POST",
-                        body: formData
-                    })
-                    const result = await response.json()
-                    if (result.success) {
-                        window.location.href = "../index.php" 
-                    } else {
-                        Swal.fire({
-                            title: "Failed!",
-                            text: result.message,
-                            icon: "error"
-                        })
-                    }
-
-                    submitBtn.disabled = false
-                    loadingSpinner.classList.add("hidden")
-                    submitBtnText.textContent = "Sign in"
-
-                } catch (err) {
-                    submitBtn.disabled = false
-                    loadingSpinner.classList.add("hidden")
-                    submitBtnText.textContent = "Sign in"
-
-                    Swal.fire({
-                        title: "Error!",
-                        text: err.message,
-                        icon: "error"
-                    })
-                }
-            })
-        </script>
     </body>
 </html>
+
+<script src="../scripts/login-scripts.js"></script>
