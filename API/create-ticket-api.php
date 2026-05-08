@@ -34,15 +34,8 @@
         $dateTimeOfEmail = !empty($dateTimeOfEmailRaw) ? date('Y-m-d H:i:s', strtotime($dateTimeOfEmailRaw)) : null;
         $deadline        = !empty($deadlineRaw)        ? date('Y-m-d H:i:s', strtotime($deadlineRaw))        : null;
 
-        // Auto-calculate timely response: urgent = 24hrs, non-urgent = 48hrs
-        $timelyResponse = 1; // default timely
-        if ($dateTimeOfEmail !== null) {
-            $emailDT    = new DateTime($dateTimeOfEmail);
-            $now        = new DateTime();
-            $diffHours  = ($now->getTimestamp() - $emailDT->getTimestamp()) / 3600;
-            $threshold  = intval($urgent) === 1 ? 24 : 48;
-            $timelyResponse = $diffHours <= $threshold ? 1 : 0;
-        }
+        // timely_response is NULL at creation; calculated when status moves to 'in_progress'
+        $timelyResponse = null;
 
         // Sections come as JSON-encoded array: [{sub_title, body}, ...]
         $sectionsRaw = $_POST['sections'] ?? '[]';
@@ -75,13 +68,13 @@
         // 1. Insert into acts_ticket (title = ticket ID string)
         $stmt = $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket]
-                (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks)
-            VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, deadline, remarks)
+            VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $ticketId, $urgent, $submitter, $createdBy,
             $customer, $emailTitle, $salesInCharge,
-            $dateTimeOfEmail ?: null, $timelyResponse, $deadline ?: null, $remarks
+            $dateTimeOfEmail ?: null, $deadline ?: null, $remarks
         ]);
 
         // Get the auto-generated parent ID

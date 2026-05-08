@@ -117,6 +117,11 @@
         </div>
         <!-- Modal Body -->
         <div class="flex flex-col gap-4 px-6 py-5 overflow-y-auto" id="modal-ticket-body"></div>
+        <!-- Modal Footer -->
+        <div class="flex items-center justify-between px-6 py-3 border-t border-zinc-200 bg-zinc-50" id="modal-ticket-footer">
+            <div class="flex flex-col" id="modal-ticket-footer-info"></div>
+            <div id="modal-ticket-action"></div>
+        </div>
     </div>
 </div>
 

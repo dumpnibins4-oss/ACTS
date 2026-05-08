@@ -177,49 +177,7 @@ function clearAll() {
     // Reset urgency
     const urgSel = document.getElementById('ticket-status');
     if (urgSel) urgSel.value = '0';
-    // Reset timely indicator
-    updateTimelyIndicator();
 }
-
-/* ── Auto-calculate Timely Response ──────────────────────── */
-function updateTimelyIndicator() {
-    const icon = document.getElementById('timely-icon');
-    const text = document.getElementById('timely-text');
-    const indicator = document.getElementById('timely-indicator');
-    if (!icon || !text || !indicator) return;
-
-    const emailDateVal = document.getElementById('field-email-datetime')?.value;
-    if (!emailDateVal) {
-        icon.className = 'fa-solid fa-clock text-zinc-300 text-xs';
-        text.className = 'text-xs font-medium text-zinc-400';
-        text.textContent = 'Set email date & urgency first';
-        indicator.className = 'flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-2';
-        return;
-    }
-
-    const emailDate = new Date(emailDateVal);
-    const now = new Date();
-    const diffHours = (now - emailDate) / (1000 * 60 * 60);
-    const isUrgent = document.getElementById('ticket-status')?.value === '1';
-    const threshold = isUrgent ? 24 : 48;
-    const isTimely = diffHours <= threshold;
-
-    if (isTimely) {
-        icon.className = 'fa-solid fa-circle-check text-green-500 text-xs';
-        text.className = 'text-xs font-semibold text-green-600';
-        text.textContent = `Yes — within ${threshold}hrs`;
-        indicator.className = 'flex items-center gap-2 border border-green-200 bg-green-50 rounded-lg px-3 py-2';
-    } else {
-        icon.className = 'fa-solid fa-circle-xmark text-red-500 text-xs';
-        text.className = 'text-xs font-semibold text-red-600';
-        text.textContent = `No — exceeded ${threshold}hrs`;
-        indicator.className = 'flex items-center gap-2 border border-red-200 bg-red-50 rounded-lg px-3 py-2';
-    }
-}
-
-// Listen for changes on both fields
-document.getElementById('field-email-datetime')?.addEventListener('change', updateTimelyIndicator);
-document.getElementById('ticket-status')?.addEventListener('change', updateTimelyIndicator);
 
 // Expose functions globally for inline onclick handlers
 window.updateStatus  = updateStatus;

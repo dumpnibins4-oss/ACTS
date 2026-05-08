@@ -27,10 +27,11 @@
         }
 
         if ($filter === 'active') {
-            $where[] = "t.status NOT IN ('completed', 'closed')";
+            $where[] = "t.status NOT IN ('completed', 'closed', 'enroute')";
         } elseif ($filter === 'history') {
-            $where[] = "t.status IN ('completed', 'closed')";
+            // history = all tickets (no status filter)
         }
+        // filter=all also returns everything
 
         if ($search !== '') {
             $where[]  = "(t.title LIKE ? OR t.status LIKE ?)";
@@ -47,18 +48,26 @@
                 t.title,
                 t.status,
                 t.urgent,
+                t.submitter,
                 t.created_at,
                 t.created_by,
                 t.updated_at,
                 t.updated_by,
                 t.completed_at,
                 t.completed_by,
+                t.customer,
+                t.email_title,
+                t.sales_in_charge,
+                t.date_and_time_of_email,
+                t.timely_response,
+                t.deadline,
+                t.remarks,
                 m.FirstName,
                 m.LastName,
                 m.Department
             FROM [LRNPH_OJT].[dbo].[acts_ticket] t
             LEFT JOIN [LRNPH_OJT].[dbo].[lrn_master_list] m
-                ON TRY_CAST(t.created_by AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50))
+                ON TRY_CAST(t.created_by AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
             $whereSQL
             ORDER BY t.created_at DESC
         ";

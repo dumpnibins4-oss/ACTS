@@ -140,20 +140,11 @@
                     </div>
                 </div>
 
-                <!-- Row 4: Timely Response (auto) / Remarks -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Timely Response <span class="text-zinc-300 font-medium">(auto-calculated)</span></label>
-                        <div id="timely-indicator" class="flex items-center gap-2 border border-zinc-200 rounded-lg px-3 py-2">
-                            <i class="fa-solid fa-clock text-zinc-300 text-xs" id="timely-icon"></i>
-                            <span class="text-xs font-medium text-zinc-400" id="timely-text">Set email date & urgency first</span>
-                        </div>
-                    </div>
-                    <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Remarks</label>
-                        <input type="text" id="field-remarks" name="remarks" placeholder="Optional remarks"
-                            class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
-                    </div>
+                <!-- Row 4: Remarks (full width) -->
+                <div class="flex flex-col gap-1">
+                    <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Remarks</label>
+                    <input type="text" id="field-remarks" name="remarks" placeholder="Optional remarks"
+                        class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                 </div>
             </div>
 

@@ -43,8 +43,8 @@
         <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
         <title>ACTS | </title>
     </head>
-    <body>
-        <div class="flex flex-col items-start justify-start w-screen h-screen bg-zinc-100 font-geist overflow-hidden">
+    <body class="overflow-x-hidden">
+        <div class="flex flex-col items-start justify-start w-full min-h-screen bg-zinc-100 font-geist">
 
             <!-- ── Floating Header ───────────────────────────────────── -->
             <header class="relative z-50 w-full flex-shrink-0 px-4 pt-3">
@@ -163,7 +163,11 @@
 
             <!-- ── Main Content ──────────────────────────────────────── -->
             <div id="main-content" class="flex flex-col flex-1 w-full overflow-y-auto pb-4 px-100 pt-10 min-h-0"></div>
-
+            
+            <!-- Footer -->
+            <footer id="footer" class="w-full h-auto flex flex-col items-center justify-center gap-3 py-4">
+                <img src="./Assets/logo/logo.png" alt="" class="w-50 h-auto object-contain">
+            </footer>
         </div>
     </body>
 </html>

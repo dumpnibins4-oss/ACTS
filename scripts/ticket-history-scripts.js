@@ -1,17 +1,23 @@
 /* ── Ticket History Scripts ────────────────────────────────── */
 (function() {
 
-const HIST_STATUS = {
-    completed:   { bg: 'bg-green-50',   text: 'text-green-600',  label: 'Completed'   },
-    closed:      { bg: 'bg-zinc-100',   text: 'text-zinc-500',   label: 'Closed'      },
+const STATUS = {
     waiting:     { bg: 'bg-zinc-100',   text: 'text-zinc-600',   label: 'Waiting'     },
-    in_progress: { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'In Progress' },
-    pending:     { bg: 'bg-orange-50',  text: 'text-orange-600', label: 'Pending'     },
-    resolved:    { bg: 'bg-indigo-50',  text: 'text-indigo-600', label: 'Resolved'    },
+    in_progress: { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'Ongoing'     },
+    completed:   { bg: 'bg-green-50',   text: 'text-green-600',  label: 'Done'        },
+    enroute:     { bg: 'bg-violet-50',  text: 'text-violet-600', label: 'Enroute'     },
+    closed:      { bg: 'bg-zinc-100',   text: 'text-zinc-500',   label: 'Closed'      },
+};
+
+const NEXT_STATUS = {
+    waiting:     { value: 'in_progress', label: 'Mark as Ongoing',              icon: 'fa-play',        color: 'bg-blue-500 hover:bg-blue-600'   },
+    in_progress: { value: 'completed',   label: 'Mark as Done',                 icon: 'fa-check',       color: 'bg-green-500 hover:bg-green-600' },
+    completed:   { value: 'enroute',     label: 'Mark as Enroute for Signature', icon: 'fa-paper-plane', color: 'bg-violet-500 hover:bg-violet-600' },
 };
 
 let allHistoryTickets = [];
 
+/* ── Fetch ───────────────────────────────────────────────── */
 async function loadHistory() {
     const body    = document.getElementById('history-body');
     const loading = document.getElementById('history-loading');
@@ -22,7 +28,7 @@ async function loadHistory() {
     body.querySelectorAll('.hist-row').forEach(r => r.remove());
 
     try {
-        const res  = await fetch(`./API/get-tickets-api.php?filter=history`);
+        const res  = await fetch('./API/get-tickets-api.php?filter=history');
         const data = await res.json();
 
         loading.classList.add('hidden');
@@ -35,7 +41,7 @@ async function loadHistory() {
         }
 
         allHistoryTickets = data.data;
-        renderHistory(allHistoryTickets);
+        applyAllFilters();
         updateHistStats(allHistoryTickets);
 
     } catch (err) {
@@ -46,6 +52,50 @@ async function loadHistory() {
     }
 }
 
+/* ── Filtering ──────────────────────────────────────────── */
+function applyAllFilters() {
+    const search   = (document.getElementById('history-search')?.value || '').toLowerCase();
+    const status   = document.getElementById('history-filter-status')?.value || 'all';
+    const urgency  = document.getElementById('history-filter-urgency')?.value || 'all';
+    const dateFrom = document.getElementById('history-date-from')?.value || '';
+    const dateTo   = document.getElementById('history-date-to')?.value || '';
+
+    let filtered = allHistoryTickets;
+
+    if (status !== 'all') {
+        filtered = filtered.filter(t => t.status === status);
+    }
+
+    if (urgency !== 'all') {
+        filtered = filtered.filter(t => String(t.urgent) === urgency);
+    }
+
+    if (dateFrom) {
+        const from = new Date(dateFrom);
+        filtered = filtered.filter(t => new Date(t.created_at) >= from);
+    }
+
+    if (dateTo) {
+        const to = new Date(dateTo);
+        to.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(t => new Date(t.created_at) <= to);
+    }
+
+    if (search) {
+        filtered = filtered.filter(t =>
+            (t.title || '').toLowerCase().includes(search) ||
+            (t.customer || '').toLowerCase().includes(search) ||
+            (t.email_title || '').toLowerCase().includes(search) ||
+            (t.status || '').toLowerCase().includes(search) ||
+            (t.FirstName || '').toLowerCase().includes(search) ||
+            (t.LastName || '').toLowerCase().includes(search)
+        );
+    }
+
+    renderHistory(filtered);
+}
+
+/* ── Render Table ────────────────────────────────────────── */
 function renderHistory(tickets) {
     const body  = document.getElementById('history-body');
     const empty = document.getElementById('history-empty');
@@ -61,37 +111,37 @@ function renderHistory(tickets) {
     empty.classList.add('hidden');
 
     tickets.forEach(ticket => {
-        const status       = HIST_STATUS[ticket.status] || HIST_STATUS.closed;
+        const status       = STATUS[ticket.status] || STATUS.waiting;
         const createdDate  = new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const closedDate   = ticket.completed_at
-            ? new Date(ticket.completed_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
-            : '—';
         const sectionCount = ticket.sections ? ticket.sections.length : 0;
-        const ticketData   = btoa(JSON.stringify(ticket));
+        const ticketData   = btoa(unescape(encodeURIComponent(JSON.stringify(ticket))));
 
         const row = document.createElement('div');
-        row.className = 'hist-row grid grid-cols-[1fr_120px_100px_140px_140px_80px] items-center w-full px-5 py-3 border-b border-zinc-100 hover:bg-zinc-50/50 transition-colors gap-3';
+        row.className = 'hist-row grid grid-cols-[1fr_130px_100px_100px_140px_80px] items-center w-full px-5 py-3 border-b border-zinc-100 hover:bg-zinc-50/50 transition-colors gap-3';
         row.innerHTML = `
             <div class="flex items-center gap-3 min-w-0">
-                <div class="flex items-center justify-center w-8 h-8 ${ticket.status === 'completed' ? 'bg-green-50 border-green-200' : 'bg-zinc-100 border-zinc-200'} border rounded-lg flex-shrink-0">
-                    <i class="fa-solid ${ticket.status === 'completed' ? 'fa-circle-check text-green-400' : 'fa-lock text-zinc-400'} text-xs"></i>
+                <div class="flex items-center justify-center w-8 h-8 bg-indigo-50 border border-indigo-200 rounded-lg flex-shrink-0">
+                    <i class="fa-solid fa-file-lines text-indigo-400 text-xs"></i>
                 </div>
                 <div class="flex flex-col min-w-0">
                     <p class="text-xs font-semibold text-zinc-800 truncate">${ticket.title}</p>
-                    <p class="text-[10px] text-zinc-400 font-medium">${ticket.FirstName || ''} ${ticket.LastName || ''}</p>
+                    <p class="text-[10px] text-zinc-400 font-medium truncate">${ticket.customer || ''} ${ticket.email_title ? '— ' + ticket.email_title : ''}</p>
                 </div>
             </div>
             <div>
                 <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}">${status.label}</span>
             </div>
             <div>
+                ${ticket.urgent == 1
+                    ? '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-500"><i class="fa-solid fa-bolt text-[8px] mr-0.5"></i> Urgent</span>'
+                    : '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-500">Normal</span>'
+                }
+            </div>
+            <div>
                 <span class="text-xs text-zinc-500 font-medium">${sectionCount} section${sectionCount !== 1 ? 's' : ''}</span>
             </div>
             <div>
                 <span class="text-xs text-zinc-500 font-medium">${createdDate}</span>
-            </div>
-            <div>
-                <span class="text-xs text-zinc-500 font-medium">${closedDate}</span>
             </div>
             <div class="flex justify-center">
                 <button data-ticket="${ticketData}"
@@ -103,51 +153,30 @@ function renderHistory(tickets) {
         body.appendChild(row);
     });
 
-    // Attach click handlers
     body.querySelectorAll('.view-hist-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            const ticket = JSON.parse(atob(btn.dataset.ticket));
+            const ticket = JSON.parse(decodeURIComponent(escape(atob(btn.dataset.ticket))));
             viewHistoryTicket(ticket);
         });
     });
 }
 
+/* ── Stats ───────────────────────────────────────────────── */
 function updateHistStats(tickets) {
-    document.getElementById('hist-stat-completed').textContent = tickets.filter(t => t.status === 'completed').length;
-    document.getElementById('hist-stat-closed').textContent    = tickets.filter(t => t.status === 'closed').length;
-    document.getElementById('hist-stat-total').textContent      = tickets.length;
+    document.getElementById('hist-stat-total').textContent   = tickets.length;
+    document.getElementById('hist-stat-waiting').textContent  = tickets.filter(t => t.status === 'waiting').length;
+    document.getElementById('hist-stat-ongoing').textContent  = tickets.filter(t => t.status === 'in_progress').length;
+    document.getElementById('hist-stat-done').textContent     = tickets.filter(t => t.status === 'completed').length;
+    document.getElementById('hist-stat-enroute').textContent  = tickets.filter(t => t.status === 'enroute').length;
 }
 
-// ── Search ──────────────────────────────────────────────────
-document.getElementById('history-search')?.addEventListener('input', (e) => {
-    const q = e.target.value.toLowerCase();
-    const filterVal = document.getElementById('history-filter')?.value || 'all';
-    applyFilters(q, filterVal);
-});
+/* ── Search ──────────────────────────────────────────────── */
+document.getElementById('history-search')?.addEventListener('input', () => applyAllFilters());
 
-function applyFilters(search, statusFilter) {
-    let filtered = allHistoryTickets;
-
-    if (statusFilter !== 'all') {
-        filtered = filtered.filter(t => t.status === statusFilter);
-    }
-
-    if (search) {
-        filtered = filtered.filter(t =>
-            (t.title || '').toLowerCase().includes(search) ||
-            (t.status || '').toLowerCase().includes(search) ||
-            (t.FirstName || '').toLowerCase().includes(search) ||
-            (t.LastName || '').toLowerCase().includes(search)
-        );
-    }
-
-    renderHistory(filtered);
-}
-
-// ── View History Ticket Modal ───────────────────────────────
+/* ── View History Ticket Modal ───────────────────────────── */
 function viewHistoryTicket(ticket) {
     const modal  = document.getElementById('history-modal');
-    const status = HIST_STATUS[ticket.status] || HIST_STATUS.closed;
+    const status = STATUS[ticket.status] || STATUS.waiting;
 
     document.getElementById('hist-modal-title').textContent = ticket.title;
     document.getElementById('hist-modal-date').textContent  = 'Created ' + new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
@@ -159,47 +188,107 @@ function viewHistoryTicket(ticket) {
     const bodyEl = document.getElementById('hist-modal-body');
     bodyEl.innerHTML = '';
 
-    // Meta info
-    const initials = (ticket.FirstName || 'U')[0] + (ticket.LastName || '')[0];
+    // ── Ticket detail cards ──
+    const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+
     bodyEl.innerHTML += `
-        <div class="flex flex-row flex-wrap items-center gap-4">
-            <div class="flex items-center gap-2">
-                <div class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500 overflow-hidden border border-indigo-500">
-                    <img src="http://10.2.0.8/lrnph/emp_photos/${ticket.created_by}.jpg" alt="" class="w-full h-full object-cover object-top"
-                         onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
-                    <span style="display:none" class="text-white text-[10px] font-bold flex items-center justify-center w-full h-full">${initials}</span>
-                </div>
-                <div class="flex flex-col">
-                    <p class="text-xs font-semibold text-zinc-700">${ticket.FirstName || ''} ${ticket.LastName || ''}</p>
-                    <p class="text-[10px] text-zinc-400">${ticket.Department || ''}</p>
-                </div>
+        <div class="grid grid-cols-2 gap-3">
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">SUBMITTER</p>
+                <p class="text-xs font-semibold text-zinc-700">${ticket.submitter || '—'}</p>
             </div>
-            <div class="w-px h-6 bg-zinc-200"></div>
-            <div class="flex flex-col">
-                <p class="text-[10px] text-zinc-400">Urgency</p>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">CUSTOMER</p>
+                <p class="text-xs font-semibold text-zinc-700">${ticket.customer || '—'}</p>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">TICKET TITLE</p>
+                <p class="text-xs font-semibold text-zinc-700">${ticket.email_title || '—'}</p>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">SALES IN CHARGE</p>
+                <p class="text-xs font-semibold text-zinc-700">${ticket.sales_in_charge || '—'}</p>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">EMAIL DATE & TIME</p>
+                <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.date_and_time_of_email)}</p>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">DEADLINE</p>
+                <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.deadline)}</p>
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">CLASSIFICATION</p>
                 ${ticket.urgent == 1
-                    ? '<span class="text-[10px] font-semibold text-red-500"><i class="fa-solid fa-bolt text-[8px]"></i> Urgent</span>'
-                    : '<span class="text-[10px] font-semibold text-zinc-500">Normal</span>'
+                    ? '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-bolt text-[8px]"></i> Urgent</span>'
+                    : '<span class="text-xs font-semibold text-zinc-600">Non-Urgent</span>'
+                }
+            </div>
+            <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-zinc-400 font-bold tracking-wide">TIMELY RESPONSE</p>
+                ${ticket.timely_response == null
+                    ? '<span class="text-xs font-medium text-zinc-400">—</span>'
+                    : ticket.timely_response == 1
+                        ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-[10px]"></i> Yes</span>'
+                        : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-[10px]"></i> No</span>'
                 }
             </div>
         </div>
-        <hr class="border-zinc-200" />
     `;
 
+    // Remarks
+    if (ticket.remarks) {
+        bodyEl.innerHTML += `
+            <div class="flex flex-col gap-0.5 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                <p class="text-[10px] text-amber-500 font-bold tracking-wide">REMARKS</p>
+                <p class="text-xs font-medium text-amber-700">${ticket.remarks}</p>
+            </div>
+        `;
+    }
+
+    // ── Sections ──
     if (ticket.sections && ticket.sections.length > 0) {
+        bodyEl.innerHTML += `<hr class="border-zinc-200" />`;
+
         ticket.sections.forEach((sec, idx) => {
             let imagesHTML = '';
             if (sec.images && sec.images.length > 0) {
-                imagesHTML = `
-                    <div class="flex flex-row flex-wrap gap-2 mt-2">
-                        ${sec.images.map(img => `
+                const imgExts = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'bmp', 'svg'];
+                imagesHTML = `<div class="flex flex-col gap-2 mt-2">`;
+
+                const imageFiles = sec.images.filter(img => imgExts.includes(img.image.split('.').pop().toLowerCase()));
+                const otherFiles = sec.images.filter(img => !imgExts.includes(img.image.split('.').pop().toLowerCase()));
+
+                if (imageFiles.length > 0) {
+                    imagesHTML += `<div class="flex flex-row flex-wrap gap-2">`;
+                    imageFiles.forEach(img => {
+                        imagesHTML += `
+                            <div class="img-lightbox-trigger group relative rounded-lg overflow-hidden border border-zinc-200 hover:border-indigo-300 transition-all w-24 h-24 flex-shrink-0 cursor-pointer"
+                                 data-src="./${img.image}">
+                                <img src="./${img.image}" alt="" class="w-full h-full object-cover" />
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                                    <i class="fa-solid fa-expand text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity"></i>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    imagesHTML += `</div>`;
+                }
+
+                if (otherFiles.length > 0) {
+                    imagesHTML += `<div class="flex flex-row flex-wrap gap-2">`;
+                    otherFiles.forEach(img => {
+                        imagesHTML += `
                             <a href="./${img.image}" target="_blank" class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5 hover:bg-indigo-100 transition-all">
                                 <i class="fa-solid fa-paperclip text-indigo-400 text-[10px]"></i>
                                 <span class="text-[10px] font-medium text-indigo-600 truncate max-w-32">${img.image.split('/').pop()}</span>
                             </a>
-                        `).join('')}
-                    </div>
-                `;
+                        `;
+                    });
+                    imagesHTML += `</div>`;
+                }
+
+                imagesHTML += `</div>`;
             }
 
             bodyEl.innerHTML += `
@@ -217,28 +306,122 @@ function viewHistoryTicket(ticket) {
         });
     }
 
-    // Footer info
-    const footerEl = document.getElementById('hist-modal-footer-info');
-    const completedDate = ticket.completed_at
-        ? new Date(ticket.completed_at).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
-        : '—';
-    footerEl.innerHTML = `
-        <p class="text-[10px] text-zinc-400 font-medium">
-            ${ticket.status === 'completed' ? 'Completed' : 'Closed'} on <span class="text-zinc-600 font-semibold">${completedDate}</span>
-            ${ticket.completed_by ? ' by <span class="text-zinc-600 font-semibold">' + ticket.completed_by + '</span>' : ''}
-        </p>
-    `;
+    // ── Footer info ──
+    const footerInfo = document.getElementById('hist-modal-footer-info');
+    if (ticket.updated_at) {
+        footerInfo.innerHTML = `<p class="text-[10px] text-zinc-400 font-medium">Last updated <span class="text-zinc-600 font-semibold">${fmtDate(ticket.updated_at)}</span></p>`;
+    } else {
+        footerInfo.innerHTML = '';
+    }
+
+    // ── Status action button ──
+    const actionEl = document.getElementById('hist-modal-action');
+    const next = NEXT_STATUS[ticket.status];
+    if (next) {
+        actionEl.innerHTML = `
+            <button id="hist-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
+                class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
+                <i class="fa-solid ${next.icon} text-[10px]"></i> ${next.label}
+            </button>
+        `;
+        document.getElementById('hist-status-btn').addEventListener('click', handleStatusChange);
+    } else {
+        actionEl.innerHTML = `
+            <span class="text-[10px] font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
+                <i class="fa-solid fa-check-double text-[9px]"></i> Final Status
+            </span>
+        `;
+    }
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
 }
 
-// Expose needed functions globally
-window.loadHistory       = loadHistory;
-window.applyHistoryFilter = function() {
-    const q = document.getElementById('history-search')?.value?.toLowerCase() || '';
-    const filterVal = document.getElementById('history-filter')?.value || 'all';
-    applyFilters(q, filterVal);
+/* ── Status Change Handler ───────────────────────────────── */
+async function handleStatusChange(e) {
+    const btn       = e.currentTarget;
+    const ticketId  = btn.dataset.ticketId;
+    const newStatus = btn.dataset.newStatus;
+    const original  = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Updating...';
+
+    try {
+        const formData = new FormData();
+        formData.append('ticket_id', ticketId);
+        formData.append('new_status', newStatus);
+
+        const res  = await fetch('./API/update-ticket-status-api.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: data.message,
+                confirmButtonColor: '#6366f1',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            window.closeHistoryModal();
+            loadHistory();
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            btn.disabled = false;
+            btn.innerHTML = original;
+        }
+    } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
+}
+
+/* ── Image Lightbox ──────────────────────────────────────── */
+function ensureLightbox() {
+    if (document.getElementById('img-lightbox')) return;
+    const lb = document.createElement('div');
+    lb.id = 'img-lightbox';
+    lb.className = 'fixed inset-0 z-[9999] hidden items-center justify-center bg-black/70 backdrop-blur-sm';
+    lb.innerHTML = `
+        <button id="lightbox-close" class="absolute top-4 right-4 text-white/70 hover:text-white transition-colors cursor-pointer z-10">
+            <i class="fa-solid fa-xmark text-2xl"></i>
+        </button>
+        <img id="lightbox-img" src="" alt="" class="max-w-[90vw] max-h-[85vh] rounded-xl shadow-2xl object-contain" />
+    `;
+    document.body.appendChild(lb);
+    lb.addEventListener('click', (e) => {
+        if (e.target === lb || e.target.closest('#lightbox-close')) {
+            lb.classList.add('hidden');
+            lb.classList.remove('flex');
+        }
+    });
+}
+
+document.addEventListener('click', (e) => {
+    const trigger = e.target.closest('.img-lightbox-trigger');
+    if (trigger) {
+        e.preventDefault();
+        ensureLightbox();
+        const lb  = document.getElementById('img-lightbox');
+        const img = document.getElementById('lightbox-img');
+        img.src = trigger.dataset.src;
+        lb.classList.remove('hidden');
+        lb.classList.add('flex');
+    }
+});
+
+/* ── Expose globals ──────────────────────────────────────── */
+window.loadHistory         = loadHistory;
+window.applyHistoryFilters = applyAllFilters;
+window.clearHistoryFilters = function() {
+    document.getElementById('history-filter-status').value  = 'all';
+    document.getElementById('history-filter-urgency').value = 'all';
+    document.getElementById('history-date-from').value      = '';
+    document.getElementById('history-date-to').value        = '';
+    document.getElementById('history-search').value         = '';
+    applyAllFilters();
 };
 window.closeHistoryModal = function() {
     const modal = document.getElementById('history-modal');
@@ -250,7 +433,7 @@ document.getElementById('history-modal')?.addEventListener('click', (e) => {
     if (e.target === e.currentTarget) window.closeHistoryModal();
 });
 
-// ── Initial Load ────────────────────────────────────────────
+/* ── Initial Load ────────────────────────────────────────── */
 loadHistory();
 
 })();

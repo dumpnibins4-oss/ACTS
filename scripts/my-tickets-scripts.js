@@ -3,11 +3,16 @@
 
 const STATUS = {
     waiting:     { bg: 'bg-zinc-100',   text: 'text-zinc-600',   label: 'Waiting'     },
-    in_progress: { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'In Progress' },
-    pending:     { bg: 'bg-orange-50',  text: 'text-orange-600', label: 'Pending'     },
-    resolved:    { bg: 'bg-indigo-50',  text: 'text-indigo-600', label: 'Resolved'    },
-    completed:   { bg: 'bg-green-50',   text: 'text-green-600',  label: 'Completed'   },
+    in_progress: { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'Ongoing'     },
+    completed:   { bg: 'bg-green-50',   text: 'text-green-600',  label: 'Done'        },
+    enroute:     { bg: 'bg-violet-50',  text: 'text-violet-600', label: 'Enroute'     },
     closed:      { bg: 'bg-zinc-100',   text: 'text-zinc-500',   label: 'Closed'      },
+};
+
+const NEXT_STATUS = {
+    waiting:     { value: 'in_progress', label: 'Mark as Ongoing',              icon: 'fa-play',        color: 'bg-blue-500 hover:bg-blue-600'   },
+    in_progress: { value: 'completed',   label: 'Mark as Done',                 icon: 'fa-check',       color: 'bg-green-500 hover:bg-green-600' },
+    completed:   { value: 'enroute',     label: 'Mark as Enroute for Signature', icon: 'fa-paper-plane', color: 'bg-violet-500 hover:bg-violet-600' },
 };
 
 let allMyTickets = [];
@@ -186,9 +191,11 @@ function viewTicket(ticket) {
             </div>
             <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
                 <p class="text-[10px] text-zinc-400 font-bold tracking-wide">TIMELY RESPONSE</p>
-                ${ticket.timely_response == 1
-                    ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-[10px]"></i> Yes</span>'
-                    : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-[10px]"></i> No</span>'
+                ${ticket.timely_response == null
+                    ? '<span class="text-xs font-medium text-zinc-400">—</span>'
+                    : ticket.timely_response == 1
+                        ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-[10px]"></i> Yes</span>'
+                        : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-[10px]"></i> No</span>'
                 }
             </div>
         </div>
@@ -272,8 +279,76 @@ function viewTicket(ticket) {
         });
     }
 
+    // ── Footer info ──
+    const footerInfo = document.getElementById('modal-ticket-footer-info');
+    if (ticket.updated_at) {
+        footerInfo.innerHTML = `<p class="text-[10px] text-zinc-400 font-medium">Last updated <span class="text-zinc-600 font-semibold">${fmtDate(ticket.updated_at)}</span></p>`;
+    } else {
+        footerInfo.innerHTML = '';
+    }
+
+    // ── Status action button ──
+    const actionEl = document.getElementById('modal-ticket-action');
+    const next = NEXT_STATUS[ticket.status];
+    if (next) {
+        actionEl.innerHTML = `
+            <button id="my-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
+                class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
+                <i class="fa-solid ${next.icon} text-[10px]"></i> ${next.label}
+            </button>
+        `;
+        document.getElementById('my-status-btn').addEventListener('click', handleStatusChange);
+    } else {
+        actionEl.innerHTML = `
+            <span class="text-[10px] font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
+                <i class="fa-solid fa-check-double text-[9px]"></i> Final Status
+            </span>
+        `;
+    }
+
     modal.classList.remove('hidden');
     modal.classList.add('flex');
+}
+
+/* ── Status Change Handler ───────────────────────────────── */
+async function handleStatusChange(e) {
+    const btn       = e.currentTarget;
+    const ticketId  = btn.dataset.ticketId;
+    const newStatus = btn.dataset.newStatus;
+    const original  = btn.innerHTML;
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Updating...';
+
+    try {
+        const formData = new FormData();
+        formData.append('ticket_id', ticketId);
+        formData.append('new_status', newStatus);
+
+        const res  = await fetch('./API/update-ticket-status-api.php', { method: 'POST', body: formData });
+        const data = await res.json();
+
+        if (data.success) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Status Updated',
+                text: data.message,
+                confirmButtonColor: '#6366f1',
+                timer: 1500,
+                showConfirmButton: false
+            });
+            window.closeTicketModal();
+            loadMyTickets();
+        } else {
+            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            btn.disabled = false;
+            btn.innerHTML = original;
+        }
+    } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        btn.disabled = false;
+        btn.innerHTML = original;
+    }
 }
 
 /* ── Image Lightbox ──────────────────────────────────────── */
