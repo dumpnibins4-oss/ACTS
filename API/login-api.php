@@ -9,7 +9,6 @@
         return $conn;
     }
     
-    
     if ($_SERVER['REQUEST_METHOD'] !== "POST") {
         http_response_code(404);
         echo json_encode(['success' => false, 'message' => 'Invalid Request Method']);
@@ -18,8 +17,8 @@
     
     try {
         $conn = loadDependencies();
-        $username = $_POST['username'] ?? '';
-        $password = $_POST['password'] ?? '';
+        $username    = $_POST['username'] ?? '';
+        $password    = $_POST['password'] ?? '';
 
         if ($username === '' || $password === '') {
             http_response_code(400);
@@ -37,9 +36,7 @@
             exit;
         }
 
-        $validate_password = password_verify($password, $user['password']);
-
-        if (!$validate_password) {
+        if (!password_verify($password, $user['password'])) {
             http_response_code(401);
             echo json_encode(['success' => false, 'message' => "Incorrect Password"]);
             exit;
@@ -59,7 +56,7 @@
             exit;
         }
 
-        $_SESSION['user_role'] = $role['role'];
+        $_SESSION['user_role']        = $role['role'];
         $_SESSION['user_information'] = $master_list;
 
         http_response_code(200);

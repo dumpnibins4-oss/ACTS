@@ -6,6 +6,43 @@ CREATE TABLE acts_restrictions (
 	role NVARCHAR(50),
 )
 
+-- Ticket Parent
+CREATE TABLE acts_ticket(
+	id INT PRIMARY KEY IDENTITY(1,1),
+	title NVARCHAR(255),
+	status NVARCHAR(255),
+	urgent BIT,
+    submitter NVARCHAR(255),
+	created_at DATETIME DEFAULT GETDATE(),
+	created_by NVARCHAR(255),
+	updated_at DATETIME,
+    updated_by NVARCHAR(255),
+	completed_at DATETIME,
+    completed_by NVARCHAR(255),
+    customer NVARCHAR(255), 
+    email_title NVARCHAR(255), 
+    sales_in_charge NVARCHAR(255),
+    date_and_time_of_email DATETIME, 
+    timely_response BIT, 
+    deadline DATETIME, 
+    remarks NVARCHAR(255)
+)
+
+-- Ticket Section
+CREATE TABLE acts_ticket_section(
+	id INT PRIMARY KEY IDENTITY(1,1),
+	ticket_id INT,
+	sub_title NVARCHAR(255),
+    body NVARCHAR(MAX)
+)
+
+-- Ticket Section Images
+CREATE TABLE acts_ticket_section_images(
+	id INT PRIMARY KEY IDENTITY(1,1),
+	ticket_section_id INT,
+	image NVARCHAR(MAX)
+)
+
 -- Master List
 CREATE TABLE lrn_master_list (
     id                        INT            NOT NULL,
