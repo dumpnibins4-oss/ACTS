@@ -1,4 +1,3 @@
-
 // ── Profile Dropdown ────────────────────────────────────────────────────────
 const toggleProfileExp = () => {
     const dropdown = document.getElementById('profile-dropdown')
@@ -104,9 +103,21 @@ const navigateTo = async (page, title) => {
     sessionStorage.setItem('currentTitle', title)
 }
 
-// Load saved page or default on startup
-const savedPage  = sessionStorage.getItem('currentPage')  || 'create-ticket'
-const savedTitle = sessionStorage.getItem('currentTitle') || 'Create Ticket'
+// ── Initial Load ─────────────────────────────────────────────────────────────
+const mainContent = document.getElementById('main-content')
+const myRole      = mainContent.dataset.role
+
+const defaultPages = {
+    super_admin: { page: 'user-management', title: 'User Management' },
+    admin:       { page: 'user-management', title: 'User Management' },
+    editor:      { page: 'create-ticket',   title: 'Create Ticket'   },
+    user:        { page: 'ticket-history',  title: 'Ticket History'  },
+}
+
+const defaults   = defaultPages[myRole] || defaultPages['user']
+const savedPage  = sessionStorage.getItem('currentPage')  || defaults.page
+const savedTitle = sessionStorage.getItem('currentTitle') || defaults.title
+
 navigateTo(savedPage, savedTitle)
 
 // ── Sign Out ────────────────────────────────────────────────────────────────

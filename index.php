@@ -6,17 +6,6 @@
         exit;
     }
 
-    $routes = [
-        ['title' => 'Create Ticket', 'route' => 'create-ticket', 'icon' => 'fa-solid fa-file-lines'],
-        ['title' => 'My Tickets',    'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
-        ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
-    ];
-
-    $itRoutes = [
-        ['title' => 'Dashboard',       'route' => 'dashboard',       'icon' => 'fa-solid fa-bullseye'],
-        ['title' => 'User Management', 'route' => 'user-management', 'icon' => 'fa-solid fa-users'],
-    ];
-
     $firstName  = $_SESSION['user_information']['FirstName']  ?? '';
     $middleName = $_SESSION['user_information']['MiddleName'] ?? '';
     $lastName   = $_SESSION['user_information']['LastName']   ?? '';
@@ -26,6 +15,17 @@
     $fullName   = $firstName . ' ' . substr($middleName, 0, 1) . '. ' . $lastName;
     $initials   = strtoupper(substr($firstName, 0, 1) . substr($lastName, 0, 1));
     $roleLabel  = $role === 'super_admin' ? 'Super Admin' : ucfirst($role);
+
+    $routes = 
+        $_SESSION['user_role'] === 'super_admin' || $_SESSION['user_role'] === 'admin' ? [
+            ['title' => 'User Management', 'route' => 'user-management', 'icon' => 'fa-solid fa-users'],
+        ] : ($_SESSION['user_role'] === 'editor' ? [
+            ['title' => 'Create Ticket', 'route' => 'create-ticket', 'icon' => 'fa-solid fa-file-lines'],
+            ['title' => 'My Tickets',    'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
+            ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
+        ] : [
+            ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
+        ]);
 ?>
 
 <!DOCTYPE html>
@@ -68,7 +68,7 @@
 
                     <!-- Navigation -->
                     <div id="nav-buttons" class="flex flex-row items-center gap-1">
-                        <?php foreach ($itRoutes as $route) : ?>
+                        <?php foreach ($routes as $route) : ?>
                             <button
                                 onclick="navigateTo('<?= $route['route'] ?>', '<?= $route['title'] ?>')"
                                 data-page="<?= $route['route'] ?>"
@@ -170,11 +170,12 @@
             </header>
 
             <!-- ── Main Content ──────────────────────────────────────── -->
-            <div id="main-content" class="flex flex-col flex-1 w-full overflow-y-auto pb-4 px-100 pt-10 min-h-0"></div>
+            <div id="main-content" data-role="<?= $role ?>" data-emp-id="<?= $empID ?>" class="flex flex-col flex-1 w-full overflow-y-auto pb-4 px-100 pt-10 min-h-0"></div>
             
             <!-- Footer -->
-            <footer id="footer" class="w-full h-auto flex flex-col items-center justify-center gap-3 py-4">
-                <img src="./Assets/logo/logo.png" alt="" class="w-50 h-auto object-contain" draggable="false" />
+            <footer id="footer" class="flex flex-col w-full h-auto flex flex-col items-center justify-center gap-0 py-4">
+                <img src="./Assets/logo/logo.png" alt="" class="w-30 h-auto object-contain" draggable="false" />
+                <p class="text-xs text-zinc-400 font-medium font-mono">© <?php echo date('Y'); ?> | La Rose Noire, PH</p>
             </footer>
         </div>
     </body>

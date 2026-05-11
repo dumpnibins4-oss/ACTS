@@ -372,14 +372,18 @@ function viewHistoryTicket(ticket) {
     // ── Status action button ──
     const actionEl = document.getElementById('hist-modal-action');
     const next = NEXT_STATUS[ticket.status];
+    const userRole = document.getElementById('user-role').value;
+
     if (next) {
-        actionEl.innerHTML = `
-            <button id="hist-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
-                class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
-                <i class="fa-solid ${next.icon} text-[10px]"></i> ${next.label}
-            </button>
-        `;
-        document.getElementById('hist-status-btn').addEventListener('click', handleStatusChange);
+        if (userRole === 'editor') {
+            actionEl.innerHTML = `
+                <button id="hist-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
+                    class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
+                    <i class="fa-solid ${next.icon} text-[10px]"></i> ${next.label}
+                </button>
+            `;
+            document.getElementById('hist-status-btn').addEventListener('click', handleStatusChange);
+        }
     } else {
         actionEl.innerHTML = `
             <span class="text-[10px] font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">

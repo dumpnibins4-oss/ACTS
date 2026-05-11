@@ -4,6 +4,9 @@
 ?>
 
 <div class="flex flex-col items-start justify-start w-full h-full gap-6">
+    <!-- Hidden Role -->
+    <input type="hidden" id="user-role" value="<?php echo $_SESSION['user_role']; ?>">
+    
     <div class="flex flex-row items-end justify-between w-full h-auto">
         <div class="flex flex-col items-start justify-start w-auto h-auto gap-1">
             <h1 class="text-2xl font-bold text-zinc-800 tracking-wide">Ticket History</h1>
@@ -21,21 +24,23 @@
                 <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
             </button>
             <!-- Export Dropdown -->
-            <div class="relative" id="export-dropdown-wrapper">
-                <button id="export-toggle-btn" onclick="toggleExportDropdown()" class="flex items-center gap-1.5 text-xs font-medium text-white bg-indigo-500 border border-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-600 transition-all cursor-pointer">
-                    <i class="fa-solid fa-file-export text-[10px]"></i> Export
-                    <i class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i>
-                </button>
-                <div id="export-dropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden w-48">
-                    <button onclick="exportTickets('all')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all cursor-pointer">
-                        <i class="fa-solid fa-table-list text-[10px] text-zinc-400"></i> Export All Tickets
+            <?php if ($_SESSION['user_role'] === 'editor') : ?>
+                <div class="relative" id="export-dropdown-wrapper">
+                    <button id="export-toggle-btn" onclick="toggleExportDropdown()" class="flex items-center gap-1.5 text-xs font-medium text-white bg-indigo-500 border border-indigo-500 rounded-lg px-3 py-2 hover:bg-indigo-600 transition-all cursor-pointer">
+                        <i class="fa-solid fa-file-export text-[10px]"></i> Export
+                        <i class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i>
                     </button>
-                    <hr class="border-zinc-100" />
-                    <button onclick="exportTickets('enroute')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-violet-50 hover:text-violet-600 transition-all cursor-pointer">
-                        <i class="fa-solid fa-paper-plane text-[10px] text-zinc-400"></i> Export Enroute Only
-                    </button>
+                    <div id="export-dropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden w-48">
+                        <button onclick="exportTickets('all')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all cursor-pointer">
+                            <i class="fa-solid fa-table-list text-[10px] text-zinc-400"></i> Export All Tickets
+                        </button>
+                        <hr class="border-zinc-100" />
+                        <button onclick="exportTickets('enroute')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-violet-50 hover:text-violet-600 transition-all cursor-pointer">
+                            <i class="fa-solid fa-paper-plane text-[10px] text-zinc-400"></i> Export Enroute Only
+                        </button>
+                    </div>
                 </div>
-            </div>
+            <?php endif; ?>
         </div>
     </div>
 
