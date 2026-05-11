@@ -84,6 +84,14 @@
             $updates['completed_by'] = $updatedBy;
         }
 
+        // When moving to enroute: save remarks
+        if ($newStatus === 'enroute') {
+            $remarks = $_POST['remarks'] ?? '';
+            if (!empty(trim($remarks))) {
+                $updates['remarks'] = trim($remarks);
+            }
+        }
+
         // ── Execute update ─────────────────────────────────────────
         $setClauses = [];
         $params     = [];
@@ -96,6 +104,14 @@
         $sql = "UPDATE [LRNPH_OJT].[dbo].[acts_ticket] SET " . implode(', ', $setClauses) . " WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->execute($params);
+
+        // ── Log: status ─────────────────────────────────────────────
+        $conn->prepare("
+            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by)
+            SELECT id, ?, 'status', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
+            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+        ")->execute([$updatedBy, $ticketId]);
 
         http_response_code(200);
         echo json_encode([

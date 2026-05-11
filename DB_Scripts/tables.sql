@@ -28,6 +28,29 @@ CREATE TABLE acts_ticket(
     remarks NVARCHAR(255)
 )
 
+-- Ticket Logs
+CREATE TABLE acts_ticket_logs (
+    id                      INT PRIMARY KEY IDENTITY(1,1),
+    ticket_id               INT NOT NULL,
+    changed_at              DATETIME DEFAULT GETDATE(),
+    changed_by              NVARCHAR(255),
+    action                  NVARCHAR(10),
+    -- Mirror every column from acts_ticket (except id/identity)
+    title                   NVARCHAR(255),
+    status                  NVARCHAR(255),
+    urgent                  BIT,
+    submitter               NVARCHAR(255),
+    customer                NVARCHAR(255),
+    email_title             NVARCHAR(255),
+    sales_in_charge         NVARCHAR(255),
+    date_and_time_of_email  DATETIME,
+    timely_response         BIT,
+    deadline                DATETIME,
+    remarks                 NVARCHAR(255),
+    completed_at            DATETIME,
+    completed_by            NVARCHAR(255)
+)
+
 -- Ticket Section
 CREATE TABLE acts_ticket_section(
 	id INT PRIMARY KEY IDENTITY(1,1),

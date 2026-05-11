@@ -16,6 +16,9 @@ const NEXT_STATUS = {
 };
 
 let allHistoryTickets = [];
+let histCurrentPage = 1;
+const HIST_PAGE_SIZE = 10;
+let histFilteredCache = [];
 
 /* ── Fetch ───────────────────────────────────────────────── */
 async function loadHistory() {
@@ -37,10 +40,12 @@ async function loadHistory() {
             empty.classList.remove('hidden');
             empty.classList.add('flex');
             updateHistStats([]);
+            updateHistPagination([]);
             return;
         }
 
         allHistoryTickets = data.data;
+        histCurrentPage = 1;
         applyAllFilters();
         updateHistStats(allHistoryTickets);
 
@@ -92,6 +97,7 @@ function applyAllFilters() {
         );
     }
 
+    histCurrentPage = 1;
     renderHistory(filtered);
 }
 
@@ -105,12 +111,19 @@ function renderHistory(tickets) {
     if (tickets.length === 0) {
         empty.classList.remove('hidden');
         empty.classList.add('flex');
+        updateHistPagination([]);
         return;
     }
 
     empty.classList.add('hidden');
 
-    tickets.forEach(ticket => {
+    histFilteredCache = tickets;
+    const totalPages = Math.ceil(tickets.length / HIST_PAGE_SIZE);
+    if (histCurrentPage > totalPages) histCurrentPage = totalPages;
+    const start = (histCurrentPage - 1) * HIST_PAGE_SIZE;
+    const pageTickets = tickets.slice(start, start + HIST_PAGE_SIZE);
+
+    pageTickets.forEach(ticket => {
         const status       = STATUS[ticket.status] || STATUS.waiting;
         const createdDate  = new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const sectionCount = ticket.sections ? ticket.sections.length : 0;
@@ -134,7 +147,7 @@ function renderHistory(tickets) {
             <div>
                 ${ticket.urgent == 1
                     ? '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-500"><i class="fa-solid fa-bolt text-[8px] mr-0.5"></i> Urgent</span>'
-                    : '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-500">Normal</span>'
+                    : '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-500">Non-Urgent</span>'
                 }
             </div>
             <div>
@@ -159,6 +172,43 @@ function renderHistory(tickets) {
             viewHistoryTicket(ticket);
         });
     });
+
+    updateHistPagination(tickets);
+}
+
+/* ── Pagination ─────────────────────────────────────────── */
+function updateHistPagination(tickets) {
+    const pag = document.getElementById('history-pagination');
+    if (tickets.length <= HIST_PAGE_SIZE) {
+        pag.classList.add('hidden');
+        return;
+    }
+    pag.classList.remove('hidden');
+    pag.classList.add('flex');
+
+    const total      = tickets.length;
+    const totalPages = Math.ceil(total / HIST_PAGE_SIZE);
+    const start      = (histCurrentPage - 1) * HIST_PAGE_SIZE + 1;
+    const end        = Math.min(histCurrentPage * HIST_PAGE_SIZE, total);
+
+    document.getElementById('history-page-info').textContent = `Showing ${start}\u2013${end} of ${total}`;
+    document.getElementById('history-prev').disabled = histCurrentPage <= 1;
+    document.getElementById('history-next').disabled = histCurrentPage >= totalPages;
+
+    const btnsEl = document.getElementById('history-page-btns');
+    btnsEl.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+        const btn = document.createElement('button');
+        btn.className = `flex items-center justify-center w-8 h-8 text-xs font-medium rounded-lg border transition-all cursor-pointer ${i === histCurrentPage ? 'bg-indigo-500 text-white border-indigo-500' : 'text-zinc-500 bg-white border-zinc-200 hover:bg-zinc-50'}`;
+        btn.textContent = i;
+        btn.addEventListener('click', () => { histCurrentPage = i; renderHistory(histFilteredCache); });
+        btnsEl.appendChild(btn);
+    }
+}
+
+function historyPageChange(dir) {
+    histCurrentPage += dir;
+    renderHistory(histFilteredCache);
 }
 
 /* ── Stats ───────────────────────────────────────────────── */
@@ -184,6 +234,11 @@ function viewHistoryTicket(ticket) {
     const statusEl = document.getElementById('hist-modal-status');
     statusEl.textContent = status.label;
     statusEl.className   = `text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}`;
+
+    // Logs button
+    const logsBtn = document.getElementById('hist-modal-logs-btn');
+    logsBtn.classList.remove('hidden');
+    logsBtn.onclick = () => showHistoryLogs(ticket);
 
     const bodyEl = document.getElementById('hist-modal-body');
     bodyEl.innerHTML = '';
@@ -344,6 +399,50 @@ async function handleStatusChange(e) {
     const newStatus = btn.dataset.newStatus;
     const original  = btn.innerHTML;
 
+    // Prompt for remarks when transitioning to enroute
+    if (newStatus === 'enroute') {
+        const { value: remarks, isConfirmed } = await Swal.fire({
+            title: 'Enroute for Signature',
+            input: 'textarea',
+            inputLabel: 'Remarks',
+            inputPlaceholder: 'Enter remarks for this ticket…',
+            inputAttributes: { 'aria-label': 'Remarks' },
+            showCancelButton: true,
+            confirmButtonText: 'Confirm',
+            confirmButtonColor: '#6366f1',
+            inputValidator: (value) => {
+                if (!value || !value.trim()) return 'Please provide remarks before proceeding.';
+            }
+        });
+        if (!isConfirmed) return;
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Updating...';
+
+        try {
+            const formData = new FormData();
+            formData.append('ticket_id', ticketId);
+            formData.append('new_status', newStatus);
+            formData.append('remarks', remarks.trim());
+
+            const res  = await fetch('./API/update-ticket-status-api.php', { method: 'POST', body: formData });
+            const data = await res.json();
+
+            if (data.success) {
+                Swal.fire({ icon: 'success', title: 'Status Updated', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+                window.closeHistoryModal();
+                loadHistory();
+            } else {
+                Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                btn.disabled = false; btn.innerHTML = original;
+            }
+        } catch (err) {
+            Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+            btn.disabled = false; btn.innerHTML = original;
+        }
+        return;
+    }
+
     btn.disabled = true;
     btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-xs"></i> Updating...';
 
@@ -375,6 +474,118 @@ async function handleStatusChange(e) {
         Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
         btn.disabled = false;
         btn.innerHTML = original;
+    }
+}
+
+/* ── Ticket Logs View (History) ───────────────────────────── */
+async function showHistoryLogs(ticket) {
+    const bodyEl     = document.getElementById('hist-modal-body');
+    const footerInfo = document.getElementById('hist-modal-footer-info');
+    const actionEl   = document.getElementById('hist-modal-action');
+    const logsBtn    = document.getElementById('hist-modal-logs-btn');
+
+    logsBtn.classList.add('hidden');
+
+    bodyEl.innerHTML = `
+        <div class="flex flex-col items-center justify-center py-12 gap-3">
+            <i class="fa-solid fa-spinner fa-spin text-indigo-400 text-xl"></i>
+            <p class="text-xs text-zinc-400 font-medium">Loading activity logs…</p>
+        </div>`;
+    footerInfo.innerHTML = '';
+    actionEl.innerHTML = `
+        <button id="hist-logs-back-btn" class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 border border-zinc-200 rounded-lg px-4 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
+            <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+        </button>`;
+    document.getElementById('hist-logs-back-btn').addEventListener('click', () => viewHistoryTicket(ticket));
+
+    const ACTION_META = {
+        create: { icon: 'fa-plus',        bg: 'bg-green-50',  border: 'border-green-200', iconColor: 'text-green-500', label: 'Created' },
+        edit:   { icon: 'fa-pen',         bg: 'bg-amber-50',  border: 'border-amber-200', iconColor: 'text-amber-500', label: 'Edited'  },
+        status: { icon: 'fa-arrow-right', bg: 'bg-blue-50',   border: 'border-blue-200',  iconColor: 'text-blue-500',  label: 'Status Changed' },
+    };
+
+    const STATUS_LABELS = {
+        waiting: 'Waiting', in_progress: 'Ongoing', completed: 'Done', enroute: 'Enroute', closed: 'Closed'
+    };
+
+    try {
+        const res  = await fetch(`./API/get-ticket-logs-api.php?ticket_id=${ticket.id}`);
+        const data = await res.json();
+
+        if (!data.success || data.data.length === 0) {
+            bodyEl.innerHTML = `
+                <div class="flex flex-col items-center justify-center py-12 gap-2">
+                    <div class="flex items-center justify-center w-10 h-10 bg-zinc-100 rounded-xl">
+                        <i class="fa-solid fa-clock-rotate-left text-zinc-300 text-base"></i>
+                    </div>
+                    <p class="text-sm font-semibold text-zinc-400">No logs yet</p>
+                    <p class="text-xs text-zinc-300 font-medium">Activity will appear here once actions are taken</p>
+                </div>`;
+            return;
+        }
+
+        const fmtLog = (d) => {
+            if (!d) return '—';
+            const dt = new Date(d);
+            return dt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) + ' · ' +
+                   dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        };
+
+        let html = '<div class="flex flex-col gap-0">';
+        data.data.forEach((log, idx) => {
+            const meta = ACTION_META[log.action] || ACTION_META.edit;
+            const isLast = idx === data.data.length - 1;
+
+            let desc = '';
+            if (log.action === 'create') {
+                desc = `Created ticket <span class="font-semibold text-zinc-700">${log.title || ''}</span>`;
+            } else if (log.action === 'edit') {
+                desc = `Edited ticket details`;
+            } else if (log.action === 'status') {
+                desc = `Changed status to <span class="font-semibold text-zinc-700">${STATUS_LABELS[log.status] || log.status}</span>`;
+            }
+
+            let changesHTML = '';
+            if (log.action === 'edit') {
+                const fields = [];
+                if (log.customer) fields.push(`Customer: ${log.customer}`);
+                if (log.email_title) fields.push(`Title: ${log.email_title}`);
+                if (log.sales_in_charge) fields.push(`Sales: ${log.sales_in_charge}`);
+                if (log.urgent !== null) fields.push(`Urgency: ${log.urgent == 1 ? 'Urgent' : 'Non-Urgent'}`);
+                if (fields.length > 0) {
+                    changesHTML = `<div class="flex flex-wrap gap-1.5 mt-1.5">${fields.map(f => `<span class="text-[10px] font-medium text-zinc-500 bg-zinc-100 rounded px-1.5 py-0.5">${f}</span>`).join('')}</div>`;
+                }
+            }
+
+            html += `
+                <div class="flex gap-3 relative">
+                    ${!isLast ? '<div class="absolute left-[13px] top-7 bottom-0 w-px bg-zinc-200"></div>' : ''}
+                    <div class="flex items-center justify-center w-7 h-7 ${meta.bg} ${meta.border} border rounded-full flex-shrink-0 z-10">
+                        <i class="fa-solid ${meta.icon} ${meta.iconColor} text-[10px]"></i>
+                    </div>
+                    <div class="flex flex-col gap-0.5 pb-4 min-w-0 flex-1">
+                        <p class="text-xs font-semibold text-zinc-700">${meta.label}</p>
+                        <p class="text-[11px] text-zinc-500 font-medium">${desc}</p>
+                        ${changesHTML}
+                        <div class="flex items-center gap-2 mt-1">
+                            <p class="text-[10px] text-zinc-400 font-medium">${fmtLog(log.changed_at)}</p>
+                            <span class="text-[10px] text-zinc-300">·</span>
+                            <p class="text-[10px] text-zinc-400 font-medium">${log.changed_by_name || log.changed_by || '—'}</p>
+                        </div>
+                    </div>
+                </div>`;
+        });
+        html += '</div>';
+
+        bodyEl.innerHTML = html;
+
+    } catch (err) {
+        console.error('Error loading logs:', err);
+        bodyEl.innerHTML = `
+            <div class="flex flex-col items-center justify-center py-12 gap-2">
+                <p class="text-sm font-semibold text-red-400">Failed to load logs</p>
+                <p class="text-xs text-zinc-400">Please try again</p>
+            </div>`;
     }
 }
 
@@ -415,6 +626,7 @@ document.addEventListener('click', (e) => {
 /* ── Expose globals ──────────────────────────────────────── */
 window.loadHistory         = loadHistory;
 window.applyHistoryFilters = applyAllFilters;
+window.historyPageChange   = historyPageChange;
 window.clearHistoryFilters = function() {
     document.getElementById('history-filter-status').value  = 'all';
     document.getElementById('history-filter-urgency').value = 'all';

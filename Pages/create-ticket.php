@@ -134,17 +134,10 @@
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Deadline</label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Deadline <span class="text-red-500">*</span></label>
                         <input type="datetime-local" id="field-deadline" name="deadline"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
-                </div>
-
-                <!-- Row 4: Remarks (full width) -->
-                <div class="flex flex-col gap-1">
-                    <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Remarks</label>
-                    <input type="text" id="field-remarks" name="remarks" placeholder="Optional remarks"
-                        class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                 </div>
             </div>
 

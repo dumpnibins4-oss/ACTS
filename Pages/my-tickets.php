@@ -92,6 +92,20 @@
             </div>
         </div>
     </div>
+
+    <!-- Pagination -->
+    <div id="my-tickets-pagination" class="hidden flex items-center justify-between w-full">
+        <p class="text-[11px] text-zinc-400 font-medium" id="my-tickets-page-info"></p>
+        <div class="flex items-center gap-1">
+            <button id="my-tickets-prev" onclick="myTicketsPageChange(-1)" class="flex items-center justify-center w-8 h-8 text-xs text-zinc-500 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+            </button>
+            <div id="my-tickets-page-btns" class="flex items-center gap-1"></div>
+            <button id="my-tickets-next" onclick="myTicketsPageChange(1)" class="flex items-center justify-center w-8 h-8 text-xs text-zinc-500 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
+                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+            </button>
+        </div>
+    </div>
 </div>
 
 <!-- Ticket Detail Modal -->
@@ -110,6 +124,12 @@
             </div>
             <div class="flex items-center gap-2">
                 <span id="modal-ticket-status" class="text-[10px] font-semibold px-2.5 py-1 rounded-full"></span>
+                <button id="modal-ticket-edit-btn" class="flex items-center justify-center text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
+                    <i class="fa-solid fa-pen text-[10px] mr-1"></i> Edit
+                </button>
+                <button id="modal-ticket-logs-btn" class="flex items-center justify-center text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
+                    <i class="fa-solid fa-clock-rotate-left text-[10px] mr-1"></i> Logs
+                </button>
                 <button onclick="closeTicketModal()" class="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer">
                     <i class="fa-solid fa-xmark text-base"></i>
                 </button>

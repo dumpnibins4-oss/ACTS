@@ -4,11 +4,6 @@
     error_reporting(E_ALL);
     ini_set('display_errors', 0);
 
-    function loadDependencies() {
-        require_once __DIR__ . '/../Connections/conn.php';
-        return $conn;
-    }
-
     if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
         http_response_code(405);
         echo json_encode(['success' => false, 'message' => 'Invalid Request Method']);
@@ -16,26 +11,21 @@
     }
 
     try {
-        $conn = loadDependencies();
+        require_once __DIR__ . '/../Connections/conn.php';
 
         // ── Collect inputs ──────────────────────────────────────────
         $ticketId           = $_POST['ticket_id']              ?? '';
-        $urgent             = $_POST['urgent']                 ?? 0;
-        $submitter          = $_POST['submitter']              ?? '';
-        $createdBy          = $_POST['created_by']             ?? '';
         $customer           = $_POST['customer']               ?? '';
         $emailTitle         = $_POST['email_title']            ?? '';
         $salesInCharge      = $_POST['sales_in_charge']        ?? '';
         $dateTimeOfEmailRaw = $_POST['date_and_time_of_email'] ?? '';
         $deadlineRaw        = $_POST['deadline']               ?? '';
         $remarks            = $_POST['remarks']                ?? '';
+        $urgent             = $_POST['urgent']                 ?? 0;
 
-        // Convert datetime-local format (2026-05-08T14:43) to SQL Server format
+        // Convert datetime-local format to SQL Server format
         $dateTimeOfEmail = !empty($dateTimeOfEmailRaw) ? date('Y-m-d H:i:s', strtotime($dateTimeOfEmailRaw)) : null;
         $deadline        = !empty($deadlineRaw)        ? date('Y-m-d H:i:s', strtotime($deadlineRaw))        : null;
-
-        // timely_response is NULL at creation; calculated when status moves to 'in_progress'
-        $timelyResponse = null;
 
         // Sections come as JSON-encoded array: [{sub_title, body}, ...]
         $sectionsRaw = $_POST['sections'] ?? '[]';
@@ -45,6 +35,23 @@
         if ($ticketId === '') {
             http_response_code(400);
             echo json_encode(['success' => false, 'message' => 'Ticket ID is required']);
+            exit;
+        }
+
+        // ── Verify ticket exists and status is 'waiting' ────────────
+        $stmt = $conn->prepare("SELECT id, status FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
+        $stmt->execute([$ticketId]);
+        $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$ticket) {
+            http_response_code(404);
+            echo json_encode(['success' => false, 'message' => 'Ticket not found']);
+            exit;
+        }
+
+        if ($ticket['status'] !== 'waiting') {
+            http_response_code(403);
+            echo json_encode(['success' => false, 'message' => 'Ticket can only be edited while status is Waiting']);
             exit;
         }
 
@@ -65,44 +72,85 @@
         // ── Begin transaction ───────────────────────────────────────
         $conn->beginTransaction();
 
-        // 1. Insert into acts_ticket (title = ticket ID string)
+        $now       = date('Y-m-d H:i:s');
+        $updatedBy = $_SESSION['user_information']['EmployeeID'] ?? '';
+
+        // 1. Update main ticket record
         $stmt = $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket]
-                (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, deadline, remarks)
-            VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            UPDATE [LRNPH_OJT].[dbo].[acts_ticket]
+            SET customer = ?, email_title = ?, sales_in_charge = ?,
+                date_and_time_of_email = ?, deadline = ?, remarks = ?,
+                urgent = ?, updated_at = ?, updated_by = ?
+            WHERE id = ?
         ");
         $stmt->execute([
-            $ticketId, $urgent, $submitter, $createdBy,
             $customer, $emailTitle, $salesInCharge,
-            $dateTimeOfEmail ?: null, $deadline ?: null, $remarks
+            $dateTimeOfEmail, $deadline, $remarks,
+            $urgent, $now, $updatedBy, $ticketId
         ]);
 
-        // Get the auto-generated parent ID
-        $parentId = $conn->lastInsertId();
+        // 2. Collect all kept image IDs across sections
+        $allKeptImageIds = [];
+        foreach ($sections as $sec) {
+            $kept = $sec['kept_image_ids'] ?? [];
+            foreach ($kept as $kid) {
+                $allKeptImageIds[] = intval($kid);
+            }
+        }
 
-        // 2. Insert each section
+        // Get existing section IDs
+        $stmtSec = $conn->prepare("SELECT id FROM [LRNPH_OJT].[dbo].[acts_ticket_section] WHERE ticket_id = ?");
+        $stmtSec->execute([$ticketId]);
+        $oldSections = $stmtSec->fetchAll(PDO::FETCH_COLUMN);
+
+        if (count($oldSections) > 0) {
+            $placeholders = implode(',', array_fill(0, count($oldSections), '?'));
+
+            // Delete only images that are NOT in the kept list
+            if (count($allKeptImageIds) > 0) {
+                $keptPlaceholders = implode(',', array_fill(0, count($allKeptImageIds), '?'));
+                $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders) AND id NOT IN ($keptPlaceholders)")
+                     ->execute(array_merge($oldSections, $allKeptImageIds));
+            } else {
+                // No images kept — delete all
+                $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders)")
+                     ->execute($oldSections);
+            }
+
+            // Delete old sections
+            $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section] WHERE ticket_id = ?")
+                 ->execute([$ticketId]);
+        }
+
+        // 3. Insert updated sections and re-associate kept images
         foreach ($sections as $i => $sec) {
             $subTitle = $sec['sub_title'] ?? ('Section ' . ($i + 1));
             $body     = $sec['body']      ?? '';
+            $keptIds  = $sec['kept_image_ids'] ?? [];
 
             $stmt = $conn->prepare("
                 INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section] (ticket_id, sub_title, body)
                 VALUES (?, ?, ?)
             ");
-            $stmt->execute([$parentId, $subTitle, $body]);
+            $stmt->execute([$ticketId, $subTitle, $body]);
 
             $sectionId = $conn->lastInsertId();
 
-            // 3. Handle images for this section
-            //    Files arrive as: attachments_section_0[], attachments_section_1[], ...
+            // Re-associate kept images to the new section ID
+            if (count($keptIds) > 0) {
+                $keptPlaceholders = implode(',', array_fill(0, count($keptIds), '?'));
+                $conn->prepare("UPDATE [LRNPH_OJT].[dbo].[acts_ticket_section_images] SET ticket_section_id = ? WHERE id IN ($keptPlaceholders)")
+                     ->execute(array_merge([$sectionId], array_map('intval', $keptIds)));
+            }
+
+            // Handle new file uploads for this section
             $fileKey = 'attachments_section_' . $i;
 
             if (isset($_FILES[$fileKey])) {
                 $files = $_FILES[$fileKey];
                 $fileCount = is_array($files['name']) ? count($files['name']) : 0;
 
-                // Create uploads directory if needed
-                $uploadDir = __DIR__ . '/../Uploads/tickets/' . $parentId . '/';
+                $uploadDir = __DIR__ . '/../Uploads/tickets/' . $ticketId . '/';
                 if (!is_dir($uploadDir)) {
                     mkdir($uploadDir, 0777, true);
                 }
@@ -119,8 +167,7 @@
                         throw new Exception('Failed to upload file: ' . $originalName);
                     }
 
-                    // Store relative path in DB
-                    $relativePath = 'Uploads/tickets/' . $parentId . '/' . $safeName;
+                    $relativePath = 'Uploads/tickets/' . $ticketId . '/' . $safeName;
 
                     $stmt = $conn->prepare("
                         INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section_images] (ticket_section_id, image)
@@ -131,22 +178,20 @@
             }
         }
 
-        // ── Log: create ─────────────────────────────────────────────
+        // ── Log: edit ───────────────────────────────────────────────
         $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by)
-            SELECT id, ?, 'create', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
+            SELECT id, ?, 'edit', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
             FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
-        ")->execute([$createdBy, $parentId]);
+        ")->execute([$updatedBy, $ticketId]);
 
         $conn->commit();
 
         http_response_code(200);
         echo json_encode([
-            'success'   => true,
-            'message'   => 'Ticket created successfully',
-            'ticket_id' => $ticketId,
-            'id'        => $parentId
+            'success' => true,
+            'message' => 'Ticket updated successfully'
         ]);
 
     } catch (Exception $e) {

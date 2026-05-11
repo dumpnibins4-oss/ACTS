@@ -165,7 +165,7 @@ function clearAll() {
     sectionsEmpty.classList.remove('hidden');
     sectionCount = 0;
     // Reset ticket detail fields
-    ['field-customer', 'field-email-title', 'field-email-datetime', 'field-deadline', 'field-remarks'].forEach(id => {
+    ['field-customer', 'field-email-title', 'field-email-datetime', 'field-deadline'].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.value = '';
     });
@@ -296,6 +296,25 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
     const urgentSel = document.getElementById('ticket-status');
     const urgent    = urgentSel ? urgentSel.value : 0;
 
+    // ── Validate required fields ────────────────────────────────
+    const customer      = document.getElementById('field-customer')?.value?.trim() || '';
+    const emailTitle    = document.getElementById('field-email-title')?.value?.trim() || '';
+    const salesInCharge = document.getElementById('field-sales-in-charge')?.value?.trim() || '';
+    const emailDatetime = document.getElementById('field-email-datetime')?.value?.trim() || '';
+    const deadline      = document.getElementById('field-deadline')?.value?.trim() || '';
+
+    const missingFields = [];
+    if (!customer)      missingFields.push('Customer');
+    if (!emailTitle)    missingFields.push('Ticket Title');
+    if (!salesInCharge) missingFields.push('Sales In Charge');
+    if (!emailDatetime) missingFields.push('Date & Time of Email');
+    if (!deadline)      missingFields.push('Deadline');
+
+    if (missingFields.length > 0) {
+        Swal.fire({ icon: 'warning', title: 'Missing Fields', html: `Please fill in the following required fields:<br><b>${missingFields.join(', ')}</b>` });
+        return;
+    }
+
     // Gather all section elements currently in the DOM
     const sectionEls = sectionsContainer.children;
 
@@ -335,12 +354,11 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
     formData.append('urgent',                 urgent);
     formData.append('submitter',              ticketForm.dataset.submitter || '');
     formData.append('created_by',             ticketForm.dataset.createdBy || '');
-    formData.append('customer',               document.getElementById('field-customer')?.value || '');
-    formData.append('email_title',            document.getElementById('field-email-title')?.value || '');
-    formData.append('sales_in_charge',        document.getElementById('field-sales-in-charge')?.value || '');
-    formData.append('date_and_time_of_email', document.getElementById('field-email-datetime')?.value || '');
-    formData.append('deadline',               document.getElementById('field-deadline')?.value || '');
-    formData.append('remarks',                document.getElementById('field-remarks')?.value || '');
+    formData.append('customer',               customer);
+    formData.append('email_title',            emailTitle);
+    formData.append('sales_in_charge',        salesInCharge);
+    formData.append('date_and_time_of_email', emailDatetime);
+    formData.append('deadline',               deadline);
     formData.append('sections',               JSON.stringify(sections));
 
     // Disable submit button

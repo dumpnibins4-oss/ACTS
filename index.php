@@ -12,6 +12,12 @@
         ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
     ];
 
+    // $itRoutes = [
+    //     ['title' => 'Dashboard',    'route' => 'dashboard',    'icon' => 'fa-solid fa-file-lines'],
+    //     ['title' => 'My Tickets',   'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
+    //     ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
+    // ];
+
     $firstName  = $_SESSION['user_information']['FirstName']  ?? '';
     $middleName = $_SESSION['user_information']['MiddleName'] ?? '';
     $lastName   = $_SESSION['user_information']['LastName']   ?? '';
