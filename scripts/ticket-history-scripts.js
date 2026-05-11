@@ -623,10 +623,31 @@ document.addEventListener('click', (e) => {
     }
 });
 
+/* ── Export ──────────────────────────────────────────────── */
+function toggleExportDropdown() {
+    const dd = document.getElementById('export-dropdown');
+    dd.classList.toggle('hidden');
+}
+
+function exportTickets(filter) {
+    document.getElementById('export-dropdown').classList.add('hidden');
+    window.open(`./API/export-tickets-api.php?filter=${filter}`, '_blank');
+}
+
+// Close export dropdown on outside click
+document.addEventListener('click', (e) => {
+    const wrapper = document.getElementById('export-dropdown-wrapper');
+    if (wrapper && !wrapper.contains(e.target)) {
+        document.getElementById('export-dropdown')?.classList.add('hidden');
+    }
+});
+
 /* ── Expose globals ──────────────────────────────────────── */
 window.loadHistory         = loadHistory;
 window.applyHistoryFilters = applyAllFilters;
 window.historyPageChange   = historyPageChange;
+window.toggleExportDropdown = toggleExportDropdown;
+window.exportTickets       = exportTickets;
 window.clearHistoryFilters = function() {
     document.getElementById('history-filter-status').value  = 'all';
     document.getElementById('history-filter-urgency').value = 'all';
