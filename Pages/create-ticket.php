@@ -130,12 +130,12 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Date & Time of Email <span class="text-red-500">*</span></label>
-                        <input type="datetime-local" id="field-email-datetime" name="date_and_time_of_email"
+                        <input type="text" id="field-email-datetime" name="date_and_time_of_email" placeholder="Select date and time"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
                     <div class="flex flex-col gap-1">
                         <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Deadline <span class="text-red-500">*</span></label>
-                        <input type="datetime-local" id="field-deadline" name="deadline"
+                        <input type="text" id="field-deadline" name="deadline" placeholder="Select deadline"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
                 </div>

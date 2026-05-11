@@ -12,11 +12,10 @@
         ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
     ];
 
-    // $itRoutes = [
-    //     ['title' => 'Dashboard',    'route' => 'dashboard',    'icon' => 'fa-solid fa-file-lines'],
-    //     ['title' => 'My Tickets',   'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
-    //     ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
-    // ];
+    $itRoutes = [
+        ['title' => 'Dashboard',       'route' => 'dashboard',       'icon' => 'fa-solid fa-bullseye'],
+        ['title' => 'User Management', 'route' => 'user-management', 'icon' => 'fa-solid fa-users'],
+    ];
 
     $firstName  = $_SESSION['user_information']['FirstName']  ?? '';
     $middleName = $_SESSION['user_information']['MiddleName'] ?? '';
@@ -41,6 +40,9 @@
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
         <!-- SweetAlert2 -->
         <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- Flatpickr -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+        <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
         <!-- Styles -->
         <link rel="stylesheet" href="./Styles/styles.css" />
         <!-- Geist Sans Font -->
@@ -66,7 +68,7 @@
 
                     <!-- Navigation -->
                     <div id="nav-buttons" class="flex flex-row items-center gap-1">
-                        <?php foreach ($routes as $route) : ?>
+                        <?php foreach ($itRoutes as $route) : ?>
                             <button
                                 onclick="navigateTo('<?= $route['route'] ?>', '<?= $route['title'] ?>')"
                                 data-page="<?= $route['route'] ?>"
@@ -172,7 +174,7 @@
             
             <!-- Footer -->
             <footer id="footer" class="w-full h-auto flex flex-col items-center justify-center gap-3 py-4">
-                <img src="./Assets/logo/logo.png" alt="" class="w-50 h-auto object-contain">
+                <img src="./Assets/logo/logo.png" alt="" class="w-50 h-auto object-contain" draggable="false" />
             </footer>
         </div>
     </body>

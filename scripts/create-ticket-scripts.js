@@ -1,4 +1,10 @@
 (function() {
+/* ── Initialize Date Pickers ───────────────────────────────── */
+if (typeof flatpickr !== 'undefined') {
+    flatpickr('#field-email-datetime', { enableTime: true, dateFormat: "Y-m-d H:i" });
+    flatpickr('#field-deadline', { enableTime: true, dateFormat: "Y-m-d H:i" });
+}
+
 /* ── Ticket ID ─────────────────────────────────────────────── */
 document.getElementById('ticket-id').textContent = 'TKT-' + Math.random().toString(36).slice(2, 7).toUpperCase();
 

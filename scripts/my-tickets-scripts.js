@@ -516,11 +516,11 @@ function enterEditMode(ticket) {
             </div>
             <div class="flex flex-col gap-1">
                 <label class="${labelCls}">EMAIL DATE & TIME <span class="text-red-500">*</span></label>
-                <input type="datetime-local" id="edit-email-datetime" value="${toLocal(ticket.date_and_time_of_email)}" class="${inputCls}" />
+                <input type="text" id="edit-email-datetime" value="${toLocal(ticket.date_and_time_of_email)}" placeholder="Select date and time" class="${inputCls}" />
             </div>
             <div class="flex flex-col gap-1">
                 <label class="${labelCls}">DEADLINE</label>
-                <input type="datetime-local" id="edit-deadline" value="${toLocal(ticket.deadline)}" class="${inputCls}" />
+                <input type="text" id="edit-deadline" value="${toLocal(ticket.deadline)}" placeholder="Select deadline" class="${inputCls}" />
             </div>
         </div>
         <div class="flex flex-col gap-1">
@@ -555,6 +555,12 @@ function enterEditMode(ticket) {
 
     // Wire up sales search dropdown
     initEditSalesDropdown();
+
+    // Initialize Flatpickr on edit date fields
+    if (typeof flatpickr !== 'undefined') {
+        flatpickr('#edit-email-datetime', { enableTime: true, dateFormat: "Y-m-d H:i" });
+        flatpickr('#edit-deadline', { enableTime: true, dateFormat: "Y-m-d H:i" });
+    }
 
     // Replace footer with Save / Cancel buttons
     const footerInfo   = document.getElementById('modal-ticket-footer-info');
