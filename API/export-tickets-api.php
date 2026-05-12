@@ -76,7 +76,7 @@
             'waiting'     => 'Waiting',
             'in_progress' => 'Ongoing',
             'completed'   => 'Done',
-            'enroute'     => 'Enroute',
+            'enroute'     => 'Enroute for Signature',
             'closed'      => 'Closed',
         ];
 

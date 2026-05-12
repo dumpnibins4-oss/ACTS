@@ -66,10 +66,10 @@
 
             <!-- ── Floating Header ───────────────────────────────────── -->
             <header class="relative z-50 w-full flex-shrink-0 px-4 pt-3">
-                <nav class="flex flex-row items-center justify-between w-full h-14 bg-white/80 backdrop-blur-xl border border-zinc-200/80 rounded-2xl px-96 shadow-sm shadow-zinc-200/60">
+                <nav class="flex flex-row items-center justify-between w-full h-14 bg-white/0 backdrop-blur-xl border border-zinc-200/0 rounded-2xl px-96 shadow-sm shadow-zinc-200/0">
 
                     <!-- Logo -->
-                    <div class="flex items-center gap-2 select-none">
+                    <div class="flex items-center gap-2 select-none py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
                         <div class="flex items-center justify-center w-7 h-7 bg-indigo-500 rounded-lg">
                             <i class="fa-solid fa-ticket text-white text-xs"></i>
                         </div>
@@ -77,7 +77,7 @@
                     </div>
 
                     <!-- Navigation -->
-                    <div id="nav-buttons" class="flex flex-row items-center gap-1">
+                    <div id="nav-buttons" class="flex flex-row items-center gap-1 py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
                         <?php foreach ($routes as $route) : ?>
                             <button
                                 onclick="navigateTo('<?= $route['route'] ?>', '<?= $route['title'] ?>')"
@@ -94,7 +94,7 @@
 
                     <!-- Profile Avatar (trigger) -->
                     <div class="relative" id="profile-wrapper">
-                        <button id="profile-btn" onclick="toggleProfileExp()" class="flex items-center gap-2.5 pl-1 pr-3 py-1 rounded-xl hover:bg-zinc-100 transition-all duration-200 cursor-pointer group">
+                        <button id="profile-btn" onclick="toggleProfileExp()" class="flex items-center gap-2.5 hover:bg-zinc-100 transition-all duration-200 cursor-pointer group py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
                             <img
                                 draggable="false"
                                 src="http://10.2.0.8/lrnph/emp_photos/<?= $empID ?>.jpg"

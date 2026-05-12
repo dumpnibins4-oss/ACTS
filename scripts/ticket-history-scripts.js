@@ -711,12 +711,7 @@ function toggleExportDropdown() {
 
 function exportTickets(filter) {
     document.getElementById('export-dropdown').classList.add('hidden')
-    const from = document.getElementById('export-date-from')?.value || ''
-    const to   = document.getElementById('export-date-to')?.value || ''
-    let url = `./API/export-tickets-api.php?filter=${filter}`
-    if (from) url += `&from=${from}`
-    if (to)   url += `&to=${to}`
-    window.open(url, '_blank')
+    window.open(`./API/export-tickets-api.php?filter=${filter}`, '_blank')
 }
 
 // Close export dropdown on outside click
