@@ -464,6 +464,8 @@ function viewHistoryTicket(ticket) {
                 </button>
             `
             document.getElementById('hist-status-btn').addEventListener('click', handleStatusChange)
+        } else {
+            actionEl.innerHTML = ''
         }
     } else {
         actionEl.innerHTML = `
