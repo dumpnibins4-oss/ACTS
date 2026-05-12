@@ -15,6 +15,50 @@ const NEXT_STATUS = {
     completed:   { value: 'enroute',     label: 'Mark as Enroute for Signature', icon: 'fa-paper-plane', color: 'bg-violet-500 hover:bg-violet-600' },
 };
 
+/* ── Countdown Timer Helpers ─────────────────────────────── */
+function getAcknowledgeDeadlineMs(ticket) {
+    if (!ticket.date_and_time_of_email) return null
+    const emailTime = new Date(ticket.date_and_time_of_email).getTime()
+    const hours = ticket.urgent == 1 ? 24 : 48
+    return emailTime + hours * 3600000
+}
+
+function getStoredDeadlineMs(ticket) {
+    if (!ticket.deadline) return null
+    return new Date(ticket.deadline).getTime()
+}
+
+function formatCountdown(diffMs) {
+    if (diffMs <= 0) return { text: 'Overdue', overdue: true }
+    const h = Math.floor(diffMs / 3600000)
+    const m = Math.floor((diffMs % 3600000) / 60000)
+    const s = Math.floor((diffMs % 60000) / 1000)
+    const pad = n => String(n).padStart(2, '0')
+    return { text: `${pad(h)}:${pad(m)}:${pad(s)}`, overdue: false }
+}
+
+function startMyTicketsTimers() {
+    if (window._myTicketsTimerInterval) clearInterval(window._myTicketsTimerInterval)
+    window._myTicketsTimerInterval = setInterval(() => {
+        document.querySelectorAll('.my-ack-countdown').forEach(el => {
+            const diff = parseInt(el.dataset.deadline) - Date.now()
+            const { text, overdue } = formatCountdown(diff)
+            el.textContent = overdue ? '⚠ Overdue' : `Acknowledge before: ⏱ ${text}`
+            el.className = `my-ack-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                overdue ? 'bg-red-50 text-red-500' : diff < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-500'
+            }`
+        })
+        document.querySelectorAll('.my-deadline-countdown').forEach(el => {
+            const diff = parseInt(el.dataset.deadline) - Date.now()
+            const { text, overdue } = formatCountdown(diff)
+            el.textContent = overdue ? '⚠ Deadline passed' : `Deadline in: ⏱ ${text}`
+            el.className = `my-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                overdue ? 'bg-red-50 text-red-500' : diff < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-violet-50 text-violet-500'
+            }`
+        })
+    }, 1000)
+}
+
 let allMyTickets = [];
 let myTicketsCurrentPage = 1;
 const MY_TICKETS_PAGE_SIZE = 10;
@@ -83,6 +127,12 @@ function renderMyTickets(tickets) {
         const status = STATUS[ticket.status] || STATUS.waiting;
         const date   = new Date(ticket.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         const sectionCount = ticket.sections ? ticket.sections.length : 0;
+        const ackDeadlineMs      = getAcknowledgeDeadlineMs(ticket)
+        const storedDeadlineMs   = getStoredDeadlineMs(ticket)
+        const showAckTimer       = ackDeadlineMs !== null && ticket.status === 'waiting'
+        const showDeadlineTimer  = storedDeadlineMs !== null && ticket.status !== 'enroute' && ticket.status !== 'closed'
+        const initAck            = showAckTimer ? formatCountdown(ackDeadlineMs - Date.now()) : null
+        const initDeadline       = showDeadlineTimer ? formatCountdown(storedDeadlineMs - Date.now()) : null
         const ticketData   = btoa(unescape(encodeURIComponent(JSON.stringify(ticket))));
 
         const row = document.createElement('div');
@@ -93,7 +143,21 @@ function renderMyTickets(tickets) {
                     <i class="fa-solid fa-file-lines text-indigo-400 text-xs"></i>
                 </div>
                 <div class="flex flex-col min-w-0">
-                    <p class="text-xs font-semibold text-zinc-800 truncate">${ticket.title}</p>
+                    <div class="flex flex-row items-center justify-start gap-2 w-full h-auto">
+                        <p class="text-xs font-semibold text-zinc-800 truncate">${ticket.title}</p>
+                        ${showAckTimer ? `
+                            <span class="my-ack-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                                initAck.overdue ? 'bg-red-50 text-red-500' : ackDeadlineMs - Date.now() < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-500'
+                            }" data-deadline="${ackDeadlineMs}">
+                                ${initAck.overdue ? '⚠ Overdue' : `Acknowledge before: ⏱ ${initAck.text}`}
+                            </span>` : ''}
+                        ${showDeadlineTimer ? `
+                            <span class="my-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                                initDeadline.overdue ? 'bg-red-50 text-red-500' : storedDeadlineMs - Date.now() < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-violet-50 text-violet-500'
+                            }" data-deadline="${storedDeadlineMs}">
+                                ${initDeadline.overdue ? '⚠ Deadline passed' : `Deadline in: ⏱ ${initDeadline.text}`}
+                            </span>` : ''}
+                    </div>
                     <p class="text-[10px] text-zinc-400 font-medium truncate">${ticket.customer || ''} ${ticket.email_title ? '— ' + ticket.email_title : ''}</p>
                 </div>
             </div>
@@ -130,6 +194,7 @@ function renderMyTickets(tickets) {
         });
     });
 
+    startMyTicketsTimers()
     updateMyTicketsPagination(tickets);
 }
 
@@ -248,10 +313,20 @@ function viewTicket(ticket) {
             <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
                 <p class="text-[10px] text-zinc-400 font-bold tracking-wide">EMAIL DATE & TIME</p>
                 <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.date_and_time_of_email)}</p>
+                ${ticket.status === 'waiting' && ticket.date_and_time_of_email ? `
+                    <span class="my-ack-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-indigo-50 text-indigo-500"
+                        data-deadline="${getAcknowledgeDeadlineMs(ticket)}">
+                        Acknowledge before: ⏱ ${formatCountdown(getAcknowledgeDeadlineMs(ticket) - Date.now()).text}
+                    </span>` : ''}
             </div>
             <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
                 <p class="text-[10px] text-zinc-400 font-bold tracking-wide">DEADLINE</p>
                 <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.deadline)}</p>
+                ${ticket.status !== 'enroute' && ticket.status !== 'closed' && ticket.deadline ? `
+                    <span class="my-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-violet-50 text-violet-500"
+                        data-deadline="${getStoredDeadlineMs(ticket)}">
+                        Deadline in: ⏱ ${formatCountdown(getStoredDeadlineMs(ticket) - Date.now()).text}
+                    </span>` : ''}
             </div>
             <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
                 <p class="text-[10px] text-zinc-400 font-bold tracking-wide">CLASSIFICATION</p>
@@ -376,6 +451,8 @@ function viewTicket(ticket) {
             </span>
         `;
     }
+
+    startMyTicketsTimers()
 
     modal.classList.remove('hidden');
     modal.classList.add('flex');
@@ -983,5 +1060,9 @@ document.getElementById('ticket-modal')?.addEventListener('click', (e) => {
 
 /* ── Initial Load ────────────────────────────────────────── */
 loadMyTickets();
+
+window.addEventListener('beforeunload', () => {
+    if (window._myTicketsTimerInterval) clearInterval(window._myTicketsTimerInterval)
+})
 
 })();
