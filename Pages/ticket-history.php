@@ -30,7 +30,22 @@
                         <i class="fa-solid fa-file-export text-[10px]"></i> Export
                         <i class="fa-solid fa-chevron-down text-[8px] ml-0.5"></i>
                     </button>
-                    <div id="export-dropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden w-48">
+                    <div id="export-dropdown" class="hidden absolute right-0 top-full mt-1 z-50 bg-white border border-zinc-200 rounded-lg shadow-lg overflow-hidden w-56">
+                        <!-- Date Range -->
+                        <div class="flex flex-col gap-2 px-3 py-3 border-b border-zinc-100">
+                            <p class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider">Date Range</p>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-medium text-zinc-400 w-7">From</span>
+                                <input type="date" id="export-date-from"
+                                    class="flex-1 text-[11px] font-medium text-zinc-600 bg-zinc-50 border border-zinc-200 rounded-md px-2 py-1.5 outline-none focus:border-indigo-400 transition-all" />
+                            </div>
+                            <div class="flex items-center gap-1.5">
+                                <span class="text-[10px] font-medium text-zinc-400 w-7">To</span>
+                                <input type="date" id="export-date-to"
+                                    class="flex-1 text-[11px] font-medium text-zinc-600 bg-zinc-50 border border-zinc-200 rounded-md px-2 py-1.5 outline-none focus:border-indigo-400 transition-all" />
+                            </div>
+                        </div>
+                        <!-- Export Buttons -->
                         <button onclick="exportTickets('all')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-indigo-50 hover:text-indigo-600 transition-all cursor-pointer">
                             <i class="fa-solid fa-table-list text-[10px] text-zinc-400"></i> Export All Tickets
                         </button>

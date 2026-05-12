@@ -6,7 +6,9 @@
     try {
         require_once __DIR__ . '/../Connections/conn.php';
 
-        $filter = $_GET['filter'] ?? 'all'; // 'all' or 'enroute'
+        $filter   = $_GET['filter'] ?? 'all'; // 'all' or 'enroute'
+        $dateFrom = $_GET['from']   ?? '';
+        $dateTo   = $_GET['to']     ?? '';
 
         // ── Build query ─────────────────────────────────────────────
         $where  = [];
@@ -15,6 +17,15 @@
         if ($filter === 'enroute') {
             $where[]  = "t.status = ?";
             $params[] = 'enroute';
+        }
+
+        if ($dateFrom !== '') {
+            $where[]  = "CAST(t.created_at AS DATE) >= ?";
+            $params[] = $dateFrom;
+        }
+        if ($dateTo !== '') {
+            $where[]  = "CAST(t.created_at AS DATE) <= ?";
+            $params[] = $dateTo;
         }
 
         $whereSQL = count($where) > 0 ? 'WHERE ' . implode(' AND ', $where) : '';
