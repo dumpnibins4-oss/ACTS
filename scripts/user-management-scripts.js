@@ -159,10 +159,15 @@ function buildActionButtons(user, isSelf) {
     let html = '';
 
     if (user.role !== 'super_admin') {
-        html += `<button onclick="changeUserRole(${user.id}, '${user.role}', '${(user.Department || '').replace(/'/g, "\\'")}')"
-                    class="text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer" title="Change Role">
-                    <i class="fa-solid fa-pen-to-square text-xs"></i>
-                 </button>`;
+        const uName = `${(user.FirstName || '')} ${(user.LastName || '')}`.trim().replace(/'/g, "\\'");
+        const uInit = `${(user.FirstName?.[0] || '')}${(user.LastName?.[0] || '')}`;
+        const uEmpId = (user.EmployeeID || '').replace(/'/g, "\\'");
+        if (user.Department !== "Information Technology Department - LRN") {
+            html += `<button onclick="changeUserRole(${user.id}, '${user.role}', '${(user.Department || '').replace(/'/g, "\\'")  }', '${uName}', '${uEmpId}', '${uInit}')"
+                        class="text-zinc-400 hover:text-indigo-500 transition-colors cursor-pointer" title="Change Role">
+                        <i class="fa-solid fa-pen-to-square text-xs"></i>
+                     </button>`;
+        }
     }
 
     if (myRole === 'super_admin' && user.role === 'admin' && user.Department === IT_DEPT) {
@@ -173,7 +178,10 @@ function buildActionButtons(user, isSelf) {
     }
 
     if (user.role !== 'super_admin') {
-        html += `<button onclick="deleteUser(${user.id}, '${(user.FirstName || '')} ${(user.LastName || '')}')"
+        const dName = `${(user.FirstName || '')} ${(user.LastName || '')}`.trim().replace(/'/g, "\\'");
+        const dInit = `${(user.FirstName?.[0] || '')}${(user.LastName?.[0] || '')}`;
+        const dEmpId = (user.EmployeeID || '').replace(/'/g, "\\'");
+        html += `<button onclick="deleteUser(${user.id}, '${dName}', '${user.role}', '${dEmpId}', '${dInit}')"
                     class="text-zinc-400 hover:text-red-500 transition-colors cursor-pointer" title="Remove User">
                     <i class="fa-solid fa-trash-can text-xs"></i>
                  </button>`;
@@ -352,9 +360,8 @@ function selectEmployee(emp) {
     } else if (myRole === 'admin') {
         // Admin cannot change roles for IT dept employees at all
         if (emp.Department === IT_DEPT) {
-            Swal.fire({ icon: 'warning', title: 'Restricted', text: 'Only Super Admin can manage IT Department users.' }).then(() => {
-                clearSelectedEmployee();
-            });
+            toast.warning('Restricted', { description: 'Only Super Admin can manage IT Department users.' });
+            clearSelectedEmployee();
             return;
         }
         roleOptions.editor = 'Editor';
@@ -386,13 +393,13 @@ document.addEventListener('click', (e) => {
 /* ── Submit Add User ────────────────────────────────────────── */
 async function submitAddUser() {
     if (!selectedEmployee) {
-        Swal.fire({ icon: 'warning', title: 'No Employee Selected', text: 'Please search and select an employee first.' });
+        toast.warning('No Employee Selected', { description: 'Please search and select an employee first.' });
         return;
     }
 
     const role = document.getElementById('add-user-role').value;
     if (!role) {
-        Swal.fire({ icon: 'warning', title: 'No Role Selected', text: 'Please select a role for this user.' });
+        toast.warning('No Role Selected', { description: 'Please select a role for this user.' });
         return;
     }
 
@@ -411,14 +418,14 @@ async function submitAddUser() {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({ icon: 'success', title: 'User Added', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+            toast.success('User Added', { description: data.message });
             closeAddUserModal();
             loadUsers();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        toast.error('Error', { description: 'Network error. Please try again.' });
     } finally {
         btn.disabled  = false;
         btn.innerHTML = original;
@@ -426,11 +433,10 @@ async function submitAddUser() {
 }
 
 /* ── Change Role ────────────────────────────────────────────── */
-async function changeUserRole(userId, currentRole, department) {
+async function changeUserRole(userId, currentRole, department, userName, empId, initials) {
     const roleOptions = {};
 
     if (myRole === 'super_admin') {
-        // Department restriction applies for super_admin
         if (department === IT_DEPT) {
             roleOptions.admin = 'Admin';
         } else {
@@ -438,31 +444,29 @@ async function changeUserRole(userId, currentRole, department) {
             roleOptions.user   = 'User';
         }
     } else if (myRole === 'admin') {
-        // No department restriction for admin
         roleOptions.editor = 'Editor';
         roleOptions.user   = 'User';
     }
 
-    // Remove current role from options
     delete roleOptions[currentRole];
 
     if (Object.keys(roleOptions).length === 0) {
-        Swal.fire({ icon: 'info', title: 'No Available Roles', text: 'There are no other roles you can assign to this user.' });
+        toast.info('No Available Roles', { description: 'There are no other roles you can assign to this user.' });
         return;
     }
 
-    const { value: newRole } = await Swal.fire({
+    const { value: newRole, isConfirmed } = await actsToastAction({
+        user: { name: userName, empId, role: currentRole, initials },
         title: 'Change Role',
+        description: 'Select a new role for this user.',
         input: 'select',
         inputOptions: roleOptions,
         inputPlaceholder: 'Select new role',
-        showCancelButton: true,
         confirmButtonText: 'Update',
-        confirmButtonColor: '#6366f1',
         inputValidator: (value) => { if (!value) return 'Please select a role.'; }
     });
 
-    if (!newRole) return;
+    if (!isConfirmed || !newRole) return;
 
     try {
         const formData = new FormData();
@@ -474,26 +478,25 @@ async function changeUserRole(userId, currentRole, department) {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({ icon: 'success', title: 'Role Updated', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+            toast.success('Role Updated', { description: data.message });
             loadUsers();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error.' });
+        toast.error('Error', { description: 'Network error.' });
     }
 }
 
 /* ── Delete User ────────────────────────────────────────────── */
-async function deleteUser(userId, userName) {
-    const result = await Swal.fire({
+async function deleteUser(userId, userName, userRole, empId, initials) {
+    const result = await actsToastAction({
+        user: { name: userName, empId, role: userRole, initials },
         title: 'Remove User',
-        html: `Are you sure you want to remove <b>${userName}</b>?<br><span class="text-xs text-zinc-400">They will lose access to the system.</span>`,
-        icon: 'warning',
-        showCancelButton: true,
+        description: 'They will lose access to the system.',
         confirmButtonText: 'Remove',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor: '#6b7280'
+        confirmStyle: 'danger',
+        cancelButtonText: 'Cancel'
     });
 
     if (!result.isConfirmed) return;
@@ -507,30 +510,27 @@ async function deleteUser(userId, userName) {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({ icon: 'success', title: 'User Removed', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+            toast.success('User Removed', { description: data.message });
             loadUsers();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error.' });
+        toast.error('Error', { description: 'Network error.' });
     }
 }
 
 /* ── Transfer Super Admin ───────────────────────────────────── */
 async function transferSuperAdmin(userId, userName) {
-    const result = await Swal.fire({
+    const result = await actsDialog({
         title: 'Transfer Super Admin',
-        html: `Transfer Super Admin role to <b>${userName}</b>?<br><span class="text-xs text-red-400 font-medium">You will be demoted to Admin. This cannot be undone.</span>`,
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonText: 'Transfer',
-        confirmButtonColor: '#f59e0b',
-        cancelButtonColor: '#6b7280',
+        description: `Transfer Super Admin role to <b>${userName}</b>?<br><span style="font-size:11px;color:#ef4444;font-weight:500">You will be demoted to Admin. This cannot be undone.</span>`,
         input: 'text',
         inputPlaceholder: 'Type "CONFIRM" to proceed',
+        confirmButtonText: 'Transfer',
+        confirmStyle: 'warning',
         inputValidator: (value) => {
-            if (value !== 'CONFIRM') return 'Please type CONFIRM to proceed.';
+            if (value !== 'CONFIRM') return 'Please type CONFIRM to proceed.'
         }
     });
 
@@ -545,13 +545,13 @@ async function transferSuperAdmin(userId, userName) {
         const data = await res.json();
 
         if (data.success) {
-            await Swal.fire({ icon: 'success', title: 'Transferred', text: data.message, confirmButtonColor: '#6366f1' });
+            toast.success('Transferred', { description: data.message });
             window.location.reload();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error.' });
+        toast.error('Error', { description: 'Network error.' });
     }
 }
 

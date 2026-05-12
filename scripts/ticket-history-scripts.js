@@ -489,15 +489,12 @@ async function handleStatusChange(e) {
 
     // Prompt for remarks when transitioning to enroute
     if (newStatus === 'enroute') {
-        const { value: remarks, isConfirmed } = await Swal.fire({
+        const { value: remarks, isConfirmed } = await actsDialog({
             title: 'Enroute for Signature',
+            description: 'Enter remarks for this ticket before proceeding.',
             input: 'textarea',
-            inputLabel: 'Remarks',
             inputPlaceholder: 'Enter remarks for this ticket…',
-            inputAttributes: { 'aria-label': 'Remarks' },
-            showCancelButton: true,
             confirmButtonText: 'Confirm',
-            confirmButtonColor: '#6366f1',
             inputValidator: (value) => {
                 if (!value || !value.trim()) return 'Please provide remarks before proceeding.'
             }
@@ -517,16 +514,16 @@ async function handleStatusChange(e) {
             const data = await res.json()
 
             if (data.success) {
-                Swal.fire({ icon: 'success', title: 'Status Updated', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false })
+                toast.success('Status Updated', { description: data.message })
                 window.closeHistoryModal()
                 loadHistory()
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message })
+                toast.error('Error', { description: data.message })
                 btn.disabled = false
                 btn.innerHTML = original
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' })
+            toast.error('Error', { description: 'Network error. Please try again.' })
             btn.disabled = false
             btn.innerHTML = original
         }
@@ -545,23 +542,16 @@ async function handleStatusChange(e) {
         const data = await res.json()
 
         if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Status Updated',
-                text: data.message,
-                confirmButtonColor: '#6366f1',
-                timer: 1500,
-                showConfirmButton: false
-            })
+            toast.success('Status Updated', { description: data.message })
             window.closeHistoryModal()
             loadHistory()
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message })
+            toast.error('Error', { description: data.message })
             btn.disabled = false
             btn.innerHTML = original
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' })
+        toast.error('Error', { description: 'Network error. Please try again.' })
         btn.disabled = false
         btn.innerHTML = original
     }

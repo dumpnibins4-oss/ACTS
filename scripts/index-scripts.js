@@ -121,20 +121,17 @@ const savedTitle = sessionStorage.getItem('currentTitle') || defaults.title
 navigateTo(savedPage, savedTitle)
 
 // ── Sign Out ────────────────────────────────────────────────────────────────
-const handleSignOut = () => {
-    Swal.fire({
+const handleSignOut = async () => {
+    const result = await actsDialog({
         title: 'Signing Out...',
-        text: 'Are you sure you want to sign out?',
-        icon: 'warning',
-        showCancelButton: true,
-        confirmButtonColor: '#6366f1',
-        cancelButtonColor: '#e11d48',
-        confirmButtonText: 'Yes, Sign Out!'
-    }).then((result) => {
-        if (result.isConfirmed) {
-            sessionStorage.removeItem('currentPage')
-            sessionStorage.removeItem('currentTitle')
-            window.location.href = './Auth/logout.php'
-        }
-    })
+        description: 'Are you sure you want to sign out?',
+        confirmButtonText: 'Yes, Sign Out!',
+        confirmStyle: 'confirm',
+        cancelButtonText: 'Cancel'
+    });
+    if (result.isConfirmed) {
+        sessionStorage.removeItem('currentPage')
+        sessionStorage.removeItem('currentTitle')
+        window.location.href = './Auth/logout.php'
+    }
 }

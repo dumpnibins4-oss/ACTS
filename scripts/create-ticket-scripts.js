@@ -317,7 +317,7 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
     if (!deadline)      missingFields.push('Deadline');
 
     if (missingFields.length > 0) {
-        Swal.fire({ icon: 'warning', title: 'Missing Fields', html: `Please fill in the following required fields:<br><b>${missingFields.join(', ')}</b>` });
+        toast.warning('Missing Fields', { description: `Please fill in: ${missingFields.join(', ')}` });
         return;
     }
 
@@ -325,7 +325,7 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
     const sectionEls = sectionsContainer.children;
 
     if (sectionEls.length === 0) {
-        Swal.fire({ icon: 'warning', title: 'No Sections', text: 'Please add at least one section before submitting.' });
+        toast.warning('No Sections', { description: 'Please add at least one section before submitting.' });
         return;
     }
 
@@ -340,7 +340,7 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
         const files   = secEl._sectionFiles || [];
 
         if (!body) {
-            Swal.fire({ icon: 'warning', title: 'Missing Email Body', text: `Section ${secNum} requires an email body.` });
+            toast.warning('Missing Email Body', { description: `Section ${secNum} requires an email body.` });
             return;
         }
 
@@ -378,22 +378,16 @@ document.getElementById('ticket-form').addEventListener('submit', async (e) => {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Ticket Submitted!',
-                text: `Your ticket ${ticketId} has been created successfully.`,
-                confirmButtonColor: '#6366f1'
-            }).then(() => {
-                // Reset the form
-                clearAll();
-                sectionCount = 0;
-                document.getElementById('ticket-id').textContent = 'TKT-' + Math.random().toString(36).slice(2, 7).toUpperCase();
-            });
+            toast.success('Ticket Submitted!', { description: `Your ticket ${ticketId} has been created successfully.` });
+            // Reset the form
+            clearAll();
+            sectionCount = 0;
+            document.getElementById('ticket-id').textContent = 'TKT-' + Math.random().toString(36).slice(2, 7).toUpperCase();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message || 'Failed to create ticket.' });
+            toast.error('Error', { description: data.message || 'Failed to create ticket.' });
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        toast.error('Error', { description: 'Network error. Please try again.' });
     } finally {
         submitBtn.disabled = false;
         submitBtn.innerHTML = originalText;

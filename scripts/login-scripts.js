@@ -15,6 +15,12 @@ function togglePassword() {
     }
 }
 
+// Helper: wait for sonner toast to be available
+const _toast = (method, title, opts) => {
+    const fn = () => window.toast?.[method]?.(title, opts);
+    if (window.toast) fn(); else setTimeout(fn, 300);
+};
+
 // Login form handler
 document.getElementById("login-form").addEventListener("submit", async (e) => {
     e.preventDefault()
@@ -37,11 +43,7 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
         if (result.success) {
             window.location.href = "../index.php" 
         } else {
-            Swal.fire({
-                title: "Failed!",
-                text: result.message,
-                icon: "error"
-            })
+            _toast('error', 'Failed!', { description: result.message });
         }
 
         submitBtn.disabled = false
@@ -53,10 +55,6 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
         loadingSpinner.classList.add("hidden")
         submitBtnText.textContent = "Sign in"
 
-        Swal.fire({
-            title: "Error!",
-            text: err.message,
-            icon: "error"
-        })
+        _toast('error', 'Error!', { description: err.message });
     }
-})
+})

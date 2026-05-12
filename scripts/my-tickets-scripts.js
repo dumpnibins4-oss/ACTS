@@ -467,15 +467,12 @@ async function handleStatusChange(e) {
 
     // Prompt for remarks when transitioning to enroute
     if (newStatus === 'enroute') {
-        const { value: remarks, isConfirmed } = await Swal.fire({
+        const { value: remarks, isConfirmed } = await actsDialog({
             title: 'Enroute for Signature',
+            description: 'Enter remarks for this ticket before proceeding.',
             input: 'textarea',
-            inputLabel: 'Remarks',
             inputPlaceholder: 'Enter remarks for this ticket…',
-            inputAttributes: { 'aria-label': 'Remarks' },
-            showCancelButton: true,
             confirmButtonText: 'Confirm',
-            confirmButtonColor: '#6366f1',
             inputValidator: (value) => {
                 if (!value || !value.trim()) return 'Please provide remarks before proceeding.';
             }
@@ -495,15 +492,15 @@ async function handleStatusChange(e) {
             const data = await res.json();
 
             if (data.success) {
-                Swal.fire({ icon: 'success', title: 'Status Updated', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+                toast.success('Status Updated', { description: data.message });
                 window.closeTicketModal();
                 loadMyTickets();
             } else {
-                Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+                toast.error('Error', { description: data.message });
                 btn.disabled = false; btn.innerHTML = original;
             }
         } catch (err) {
-            Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+            toast.error('Error', { description: 'Network error. Please try again.' });
             btn.disabled = false; btn.innerHTML = original;
         }
         return;
@@ -521,23 +518,16 @@ async function handleStatusChange(e) {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({
-                icon: 'success',
-                title: 'Status Updated',
-                text: data.message,
-                confirmButtonColor: '#6366f1',
-                timer: 1500,
-                showConfirmButton: false
-            });
+            toast.success('Status Updated', { description: data.message });
             window.closeTicketModal();
             loadMyTickets();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
             btn.disabled = false;
             btn.innerHTML = original;
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        toast.error('Error', { description: 'Network error. Please try again.' });
         btn.disabled = false;
         btn.innerHTML = original;
     }
@@ -834,7 +824,7 @@ async function saveTicketEdit(ticket) {
     try {
         const secEls = document.getElementById('edit-sections-container').children;
         if (secEls.length === 0) {
-            Swal.fire({ icon: 'warning', title: 'No Sections', text: 'At least one section is required.' });
+            toast.warning('No Sections', { description: 'At least one section is required.' });
             saveBtn.disabled = false; saveBtn.innerHTML = original;
             return;
         }
@@ -845,7 +835,7 @@ async function saveTicketEdit(ticket) {
         for (let i = 0; i < secEls.length; i++) {
             const body = secEls[i].querySelector('[data-edit-body]')?.value?.trim() || '';
             if (!body) {
-                Swal.fire({ icon: 'warning', title: 'Missing Body', text: `Section ${i+1} requires an email body.` });
+                toast.warning('Missing Body', { description: `Section ${i+1} requires an email body.` });
                 saveBtn.disabled = false; saveBtn.innerHTML = original;
                 return;
             }
@@ -872,15 +862,15 @@ async function saveTicketEdit(ticket) {
         const data = await res.json();
 
         if (data.success) {
-            Swal.fire({ icon: 'success', title: 'Ticket Updated', text: data.message, confirmButtonColor: '#6366f1', timer: 1500, showConfirmButton: false });
+            toast.success('Ticket Updated', { description: data.message });
             window.closeTicketModal();
             loadMyTickets();
         } else {
-            Swal.fire({ icon: 'error', title: 'Error', text: data.message });
+            toast.error('Error', { description: data.message });
             saveBtn.disabled = false; saveBtn.innerHTML = original;
         }
     } catch (err) {
-        Swal.fire({ icon: 'error', title: 'Error', text: 'Network error. Please try again.' });
+        toast.error('Error', { description: 'Network error. Please try again.' });
         saveBtn.disabled = false; saveBtn.innerHTML = original;
     }
 }

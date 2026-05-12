@@ -38,8 +38,18 @@
         <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
         <!-- Font Awesome -->
         <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
-        <!-- SweetAlert2 -->
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+        <!-- Sonner Toast (ESM) -->
+        <script type="module">
+            import { Toaster, toast } from 'https://esm.sh/sonner@2?deps=react@18.3.1,react-dom@18.3.1';
+            import { createElement }   from 'https://esm.sh/react@18.3.1';
+            import { createRoot }      from 'https://esm.sh/react-dom@18.3.1/client';
+            const el = document.createElement('div'); el.id = 'sonner-root';
+            document.body.appendChild(el);
+            createRoot(el).render(createElement(Toaster, { richColors: true, position: 'top-right', theme: 'light', closeButton: true, toastOptions: { style: { fontFamily: 'Geist, sans-serif' } } }));
+            window.toast = toast;
+        </script>
+        <!-- ACTS Dialog -->
+        <script src="./scripts/acts-dialog.js"></script>
         <!-- Flatpickr -->
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
         <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
