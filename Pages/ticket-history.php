@@ -6,6 +6,7 @@
 <div class="flex flex-col items-start justify-start w-full h-full gap-6">
     <!-- Hidden Role -->
     <input type="hidden" id="user-role" value="<?php echo $_SESSION['user_role']; ?>">
+    <input type="hidden" id="user-pos-title" value="<?php echo $_SESSION['user_information']['PositionTitle']; ?>">
     
     <div class="flex flex-row items-end justify-between w-full h-auto">
         <div class="flex flex-col items-start justify-start w-auto h-auto gap-1">

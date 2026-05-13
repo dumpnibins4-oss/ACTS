@@ -4,6 +4,7 @@
 ?>
 
 <div class="flex flex-col items-start justify-start w-full h-full gap-6" data-emp-id="<?= $empID ?>">
+    <input type="hidden" id="user-pos-title" value="<?php echo $_SESSION['user_information']['PositionTitle']; ?>">
     <div class="flex flex-row items-end justify-between w-full h-auto">
         <div class="flex flex-col items-start justify-start w-auto h-auto gap-1">
             <h1 class="text-2xl font-bold text-zinc-800 tracking-wide">My Tickets</h1>
