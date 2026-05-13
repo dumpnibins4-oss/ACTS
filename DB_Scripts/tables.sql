@@ -25,7 +25,7 @@ CREATE TABLE acts_ticket(
     date_and_time_of_email DATETIME, 
     timely_response BIT, 
     deadline DATETIME, 
-    remarks NVARCHAR(255)
+    signature_requirement BIT
 )
 
 -- Ticket Logs
@@ -34,7 +34,7 @@ CREATE TABLE acts_ticket_logs (
     ticket_id               INT NOT NULL,
     changed_at              DATETIME DEFAULT GETDATE(),
     changed_by              NVARCHAR(255),
-    action                  NVARCHAR(10),
+    action                  NVARCHAR(50),
     -- Mirror every column from acts_ticket (except id/identity)
     title                   NVARCHAR(255),
     status                  NVARCHAR(255),
@@ -46,9 +46,26 @@ CREATE TABLE acts_ticket_logs (
     date_and_time_of_email  DATETIME,
     timely_response         BIT,
     deadline                DATETIME,
-    remarks                 NVARCHAR(255),
     completed_at            DATETIME,
     completed_by            NVARCHAR(255)
+)
+
+-- Ticket Remarks
+-- remark_type values: 'status_change', 'pending', 'reschedule', 'section_update'
+CREATE TABLE acts_remarks (
+	id INT PRIMARY KEY IDENTITY(1,1),
+	ticket_id INT,
+	remark_type NVARCHAR(255),
+	remark_body NVARCHAR(MAX),
+	created_at DATETIME DEFAULT GETDATE(),
+	created_by NVARCHAR(255)
+)
+
+-- Ticket Remarks Attachments
+CREATE TABLE acts_remarks_attachments (
+	id INT PRIMARY KEY IDENTITY(1,1),
+	remark_id INT,
+	image_path NVARCHAR(MAX)
 )
 
 -- Ticket Section

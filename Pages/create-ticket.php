@@ -90,7 +90,7 @@
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Ticket Title <span class="text-red-500">*</span></label>
+                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Email Title <span class="text-red-500">*</span></label>
                         <input type="text" id="field-email-title" name="email_title" placeholder="Enter email subject"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                     </div>

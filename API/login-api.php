@@ -42,7 +42,7 @@
             exit;
         }
 
-        $stmt = $conn->prepare("SELECT * FROM [LRNPH_OJT].[dbo].[lrn_master_list] WHERE BiometricsID = ?");
+        $stmt = $conn->prepare("SELECT * FROM [LRNPH_E].[DBO].[lrn_master_list] WHERE BiometricsID = ?");
         $stmt->execute([$user['username']]);
         $master_list = $stmt->fetch();
 

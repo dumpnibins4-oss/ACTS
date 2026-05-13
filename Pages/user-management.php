@@ -92,7 +92,7 @@
         <div class="flex flex-col gap-4 px-6 py-5">
             <!-- Employee Search -->
             <div class="flex flex-col gap-1.5 relative">
-                <label class="text-[10px] font-bold text-zinc-400 tracking-wide uppercase">Search Employee <span class="text-red-500">*</span></label>
+                <label class="text-[10px] font-bold text-zinc-400 tracking-wide uppercase">Search Employee (QA/Sales/IT Department) <span class="text-red-500">*</span></label>
                 <div class="relative">
                     <i class="fa-solid fa-magnifying-glass text-zinc-300 text-[10px] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                     <input type="text" id="emp-search-input" placeholder="Search by name or employee ID…" autocomplete="off"

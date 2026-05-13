@@ -24,7 +24,7 @@
                 m.Department,
                 m.EmployeeID
             FROM [LRNPH_OJT].[dbo].[acts_restrictions] r
-            LEFT JOIN [LRNPH_OJT].[dbo].[lrn_master_list] m
+            LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
                 ON TRY_CAST(r.biometrics_id AS NVARCHAR(50)) = TRY_CAST(m.BiometricsID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
             ORDER BY
                 CASE r.role

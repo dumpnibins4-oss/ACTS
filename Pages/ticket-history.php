@@ -50,6 +50,10 @@
                             <i class="fa-solid fa-table-list text-[10px] text-zinc-400"></i> Export All Tickets
                         </button>
                         <hr class="border-zinc-100" />
+                        <button onclick="exportTickets('completed')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-green-50 hover:text-green-600 transition-all cursor-pointer">
+                            <i class="fa-solid fa-check text-[10px] text-zinc-400"></i> Export All Done
+                        </button>
+                        <hr class="border-zinc-100" />
                         <button onclick="exportTickets('enroute')" class="flex items-center gap-2 w-full px-3 py-2.5 text-xs font-medium text-zinc-600 hover:bg-violet-50 hover:text-violet-600 transition-all cursor-pointer">
                             <i class="fa-solid fa-paper-plane text-[10px] text-zinc-400"></i> Export Enroute Only
                         </button>
@@ -68,6 +72,7 @@
                 <option value="all">All Status</option>
                 <option value="waiting">Waiting</option>
                 <option value="in_progress">Ongoing</option>
+                <option value="pending">Pending</option>
                 <option value="completed">Done</option>
                 <option value="enroute">Enroute for Signature</option>
             </select>
@@ -125,6 +130,15 @@
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="hist-stat-ongoing">0</p>
                 <p class="text-[10px] text-zinc-400 font-medium">Ongoing</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
+            <div class="flex items-center justify-center w-9 h-9 bg-orange-50 rounded-lg">
+                <i class="fa-solid fa-pause text-orange-500 text-sm"></i>
+            </div>
+            <div>
+                <p class="text-lg font-bold text-zinc-800" id="hist-stat-pending">0</p>
+                <p class="text-[10px] text-zinc-400 font-medium">Pending</p>
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">

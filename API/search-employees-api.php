@@ -22,7 +22,7 @@
 
         $sql = "
             SELECT TOP 20 EmployeeID, BiometricsID, FirstName, MiddleName, LastName, Department
-            FROM [LRNPH_OJT].[dbo].[lrn_master_list]
+            FROM [LRNPH_E].[DBO].[lrn_master_list]
             WHERE IsActive = '1'
               AND (FirstName LIKE ? OR LastName LIKE ? OR MiddleName LIKE ? OR EmployeeID LIKE ? OR BiometricsID LIKE ?)
               AND (Department = 'Information Technology Department - LRN' OR Department = 'Sales Department - LRN' OR Department = 'Quality Assurance Department - LRN')

@@ -20,7 +20,6 @@
         $salesInCharge      = $_POST['sales_in_charge']        ?? '';
         $dateTimeOfEmailRaw = $_POST['date_and_time_of_email'] ?? '';
         $deadlineRaw        = $_POST['deadline']               ?? '';
-        $remarks            = $_POST['remarks']                ?? '';
         $urgent             = $_POST['urgent']                 ?? 0;
 
         // Convert datetime-local format to SQL Server format
@@ -79,13 +78,13 @@
         $stmt = $conn->prepare("
             UPDATE [LRNPH_OJT].[dbo].[acts_ticket]
             SET customer = ?, email_title = ?, sales_in_charge = ?,
-                date_and_time_of_email = ?, deadline = ?, remarks = ?,
+                date_and_time_of_email = ?, deadline = ?,
                 urgent = ?, updated_at = ?, updated_by = ?
             WHERE id = ?
         ");
         $stmt->execute([
             $customer, $emailTitle, $salesInCharge,
-            $dateTimeOfEmail, $deadline, $remarks,
+            $dateTimeOfEmail, $deadline,
             $urgent, $now, $updatedBy, $ticketId
         ]);
 
@@ -181,8 +180,16 @@
         // ── Log: edit ───────────────────────────────────────────────
         $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
-                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by)
-            SELECT id, ?, 'edit', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
+                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
+            SELECT id, ?, 'edit', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
+            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+        ")->execute([$updatedBy, $ticketId]);
+
+        // ── Log: section_update ─────────────────────────────────────
+        $conn->prepare("
+            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
+            SELECT id, ?, 'section_update', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
             FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
 

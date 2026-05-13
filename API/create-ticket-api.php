@@ -28,7 +28,6 @@
         $salesInCharge      = $_POST['sales_in_charge']        ?? '';
         $dateTimeOfEmailRaw = $_POST['date_and_time_of_email'] ?? '';
         $deadlineRaw        = $_POST['deadline']               ?? '';
-        $remarks            = $_POST['remarks']                ?? '';
 
         // Convert datetime-local format (2026-05-08T14:43) to SQL Server format
         $dateTimeOfEmail = !empty($dateTimeOfEmailRaw) ? date('Y-m-d H:i:s', strtotime($dateTimeOfEmailRaw)) : null;
@@ -68,13 +67,13 @@
         // 1. Insert into acts_ticket (title = ticket ID string)
         $stmt = $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket]
-                (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, deadline, remarks)
-            VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, deadline)
+            VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?)
         ");
         $stmt->execute([
             $ticketId, $urgent, $submitter, $createdBy,
             $customer, $emailTitle, $salesInCharge,
-            $dateTimeOfEmail ?: null, $deadline ?: null, $remarks
+            $dateTimeOfEmail ?: null, $deadline ?: null
         ]);
 
         // Get the auto-generated parent ID
@@ -134,8 +133,8 @@
         // ── Log: create ─────────────────────────────────────────────
         $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
-                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by)
-            SELECT id, ?, 'create', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
+                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
+            SELECT id, ?, 'create', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
             FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$createdBy, $parentId]);
 

@@ -56,8 +56,11 @@ function addSection() {
 
         <!-- Email body -->
         <div class="flex flex-col gap-1 px-4 pt-4 pb-3">
-            <h2 class="text-xs font-bold text-zinc-400 tracking-wide">Email Body <span class="text-red-500">*</span></h2>
-            <textarea data-section-body rows="4"
+            <div class="flex items-center justify-between">
+                <h2 class="text-xs font-bold text-zinc-400 tracking-wide">Email Body <span class="text-red-500">*</span></h2>
+                <span class="section-char-count text-[10px] font-medium text-zinc-300">0 / 1,500</span>
+            </div>
+            <textarea data-section-body rows="4" maxlength="1500"
                 placeholder="Paste or type the email body here…"
                 class="w-full bg-transparent border border-zinc-200 rounded-md pt-2 px-2 pb-1 outline-none text-zinc-500 text-xs font-medium resize-none focus:border-indigo-400 transition-all placeholder:text-zinc-300"></textarea>
         </div>
@@ -92,6 +95,17 @@ function addSection() {
     /* store references on the DOM element for later collection */
     div._sectionFiles = sectionFiles;
     div._sectionNumber = sectionCount;
+
+    /* wire up character counter for email body */
+    const bodyTA   = div.querySelector('[data-section-body]');
+    const charSpan = div.querySelector('.section-char-count');
+    if (bodyTA && charSpan) {
+        bodyTA.addEventListener('input', () => {
+            const len = bodyTA.value.length;
+            charSpan.textContent = `${len.toLocaleString()} / 1,500`;
+            charSpan.className = `section-char-count text-[10px] font-medium ${len >= 1400 ? 'text-red-400' : 'text-zinc-300'}`;
+        });
+    }
 
     fi.addEventListener('change', () => {
         Array.from(fi.files).forEach(f => addFile(f, id, sectionFiles, fl, dz));

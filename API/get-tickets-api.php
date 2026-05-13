@@ -61,12 +61,12 @@
                 t.date_and_time_of_email,
                 t.timely_response,
                 t.deadline,
-                t.remarks,
+                t.signature_requirement,
                 m.FirstName,
                 m.LastName,
                 m.Department
             FROM [LRNPH_OJT].[dbo].[acts_ticket] t
-            LEFT JOIN [LRNPH_OJT].[dbo].[lrn_master_list] m
+            LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
                 ON TRY_CAST(t.created_by AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
             $whereSQL
             ORDER BY t.created_at DESC
@@ -102,6 +102,49 @@
             }
 
             $ticket['sections'] = $secs;
+
+            // Fetch remarks from acts_remarks + attachments
+            $stmtRemarks = $conn->prepare("
+                SELECT r.id, r.remark_type, r.remark_body, r.created_at, r.created_by
+                FROM [LRNPH_OJT].[dbo].[acts_remarks] r
+                WHERE r.ticket_id = ?
+                ORDER BY r.created_at DESC
+            ");
+            $stmtRemarks->execute([$ticket['id']]);
+            $remarks = $stmtRemarks->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($remarks as &$remark) {
+                // Fetch attachments
+                $stmtAtt = $conn->prepare("
+                    SELECT id, image_path
+                    FROM [LRNPH_OJT].[dbo].[acts_remarks_attachments]
+                    WHERE remark_id = ?
+                    ORDER BY id ASC
+                ");
+                $stmtAtt->execute([$remark['id']]);
+                $remark['attachments'] = $stmtAtt->fetchAll(PDO::FETCH_ASSOC);
+
+                // Resolve created_by name
+                if (!empty($remark['created_by'])) {
+                    $empStmt = $conn->prepare("
+                        SELECT FirstName, MiddleName, LastName
+                        FROM [LRNPH_E].[DBO].[lrn_master_list]
+                        WHERE EmployeeID = ?
+                    ");
+                    $empStmt->execute([$remark['created_by']]);
+                    $emp = $empStmt->fetch(PDO::FETCH_ASSOC);
+                    if ($emp) {
+                        $mi = $emp['MiddleName'] ? substr($emp['MiddleName'], 0, 1) . '.' : '';
+                        $remark['created_by_name'] = trim($emp['FirstName'] . ' ' . $mi . ' ' . $emp['LastName']);
+                    } else {
+                        $remark['created_by_name'] = $remark['created_by'];
+                    }
+                } else {
+                    $remark['created_by_name'] = '—';
+                }
+            }
+
+            $ticket['remarks'] = $remarks;
             $result[] = $ticket;
         }
 

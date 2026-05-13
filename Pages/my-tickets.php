@@ -53,6 +53,15 @@
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
+            <div class="flex items-center justify-center w-9 h-9 bg-orange-50 rounded-lg">
+                <i class="fa-solid fa-pause text-orange-500 text-sm"></i>
+            </div>
+            <div>
+                <p class="text-lg font-bold text-zinc-800" id="stat-pending">0</p>
+                <p class="text-[10px] text-zinc-400 font-medium">Pending</p>
+            </div>
+        </div>
+        <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-red-50 rounded-lg">
                 <i class="fa-solid fa-bolt text-red-500 text-sm"></i>
             </div>

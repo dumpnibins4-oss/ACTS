@@ -44,7 +44,7 @@
             }
 
             // Validate employee exists in master list
-            $empStmt = $conn->prepare("SELECT BiometricsID, Department FROM [LRNPH_OJT].[dbo].[lrn_master_list] WHERE TRY_CAST(BiometricsID AS NVARCHAR(50)) = ?");
+            $empStmt = $conn->prepare("SELECT BiometricsID, Department FROM [LRNPH_E].[DBO].[lrn_master_list] WHERE TRY_CAST(BiometricsID AS NVARCHAR(50)) = ?");
             $empStmt->execute([$biometricsId]);
             $emp = $empStmt->fetch(PDO::FETCH_ASSOC);
             if (!$emp) {
@@ -106,7 +106,7 @@
             $targetStmt = $conn->prepare("
                 SELECT r.id, r.biometrics_id, r.role, m.Department
                 FROM [LRNPH_OJT].[dbo].[acts_restrictions] r
-                LEFT JOIN [LRNPH_OJT].[dbo].[lrn_master_list] m
+                LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
                     ON TRY_CAST(r.biometrics_id AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
                 WHERE r.id = ?
             ");
@@ -221,7 +221,7 @@
             $targetStmt = $conn->prepare("
                 SELECT r.id, r.biometrics_id, r.role, m.Department
                 FROM [LRNPH_OJT].[dbo].[acts_restrictions] r
-                LEFT JOIN [LRNPH_OJT].[dbo].[lrn_master_list] m
+                LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
                     ON TRY_CAST(r.biometrics_id AS NVARCHAR(50)) = TRY_CAST(m.BiometricsID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
                 WHERE r.id = ?
             ");

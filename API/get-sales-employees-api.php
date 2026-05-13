@@ -17,9 +17,8 @@
 
         $sql = "
             SELECT EmployeeID, BiometricsID, FirstName, MiddleName, LastName
-            FROM [LRNPH_OJT].[dbo].[lrn_master_list]
-            WHERE Department = 'Sales Department - LRN'
-              AND IsActive = '1'
+            FROM [LRNPH_E].[dbo].[lrn_master_list]
+            WHERE SubDepartment = 'Internal Sales - LRN' AND IsActive = 1
         ";
         $params = [];
 

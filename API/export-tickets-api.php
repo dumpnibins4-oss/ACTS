@@ -17,6 +17,9 @@
         if ($filter === 'enroute') {
             $where[]  = "t.status = ?";
             $params[] = 'enroute';
+        } else if ($filter === 'completed') {
+            $where[]  = "t.status = ?";
+            $params[] = 'completed';
         }
 
         if ($dateFrom !== '') {
@@ -44,7 +47,6 @@
                 t.deadline,
                 t.completed_at,
                 t.status,
-                t.remarks,
                 t.created_by
             FROM [LRNPH_OJT].[dbo].[acts_ticket] t
             $whereSQL
@@ -67,7 +69,7 @@
         // ── Also resolve QA PIC name from created_by ────────────────
         $nameStmt = $conn->prepare("
             SELECT FirstName, LastName
-            FROM [LRNPH_OJT].[dbo].[lrn_master_list]
+            FROM [LRNPH_E].[DBO].[lrn_master_list]
             WHERE TRY_CAST(EmployeeID AS NVARCHAR(50)) = ?
         ");
 
@@ -75,10 +77,21 @@
         $statusLabels = [
             'waiting'     => 'Waiting',
             'in_progress' => 'Ongoing',
+            'pending'     => 'Pending',
             'completed'   => 'Done',
             'enroute'     => 'Enroute for Signature',
             'closed'      => 'Closed',
         ];
+
+        // ── Remarks statement (Latest Status Remark) ────────────────
+        $remarksStmt = $conn->prepare("
+            SELECT TOP 1 r.remark_type, r.remark_body, r.created_at, m.FirstName, m.LastName
+            FROM [LRNPH_OJT].[dbo].[acts_remarks] r
+            LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
+                ON TRY_CAST(r.created_by AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
+            WHERE r.ticket_id = ? AND r.remark_type IN ('status_change', 'pending')
+            ORDER BY r.created_at DESC
+        ");
 
         // ── Build rows ──────────────────────────────────────────────
         $rows = [];
@@ -98,6 +111,14 @@
                 }
             }
 
+            // Get latest remark
+            $remarksStmt->execute([$ticket['id']]);
+            $latestRemark = $remarksStmt->fetch(PDO::FETCH_ASSOC);
+            $allRemarks = '';
+            if ($latestRemark) {
+                $allRemarks = $latestRemark['remark_body'];
+            }
+
             $rows[] = [
                 'title'             => $ticket['title'] ?? '',
                 'customer'          => $ticket['customer'] ?? '',
@@ -111,7 +132,7 @@
                 'deadline'          => $ticket['deadline'] ? date('M j, g:i A', strtotime($ticket['deadline'])) : '',
                 'date_resolved'     => $ticket['completed_at'] ? date('M j, Y', strtotime($ticket['completed_at'])) : '',
                 'status'            => $statusLabels[$ticket['status']] ?? $ticket['status'],
-                'remarks'           => $ticket['remarks'] ?? '',
+                'remarks'           => $allRemarks,
             ];
         }
 
@@ -155,8 +176,13 @@
         // Data rows
         foreach ($rows as $row) {
             echo '<tr>';
-            foreach ($row as $val) {
-                echo '<td style="padding:4px 8px;border:1px solid #D9E2F3;font-family:Calibri;font-size:11pt;">' . htmlspecialchars($val) . '</td>';
+            foreach ($row as $key => $val) {
+                // If this is the remarks column, allow line breaks
+                if ($key === 'remarks') {
+                    echo '<td style="padding:4px 8px;border:1px solid #D9E2F3;font-family:Calibri;font-size:11pt;white-space:pre-wrap;vertical-align:top;">' . $val . '</td>';
+                } else {
+                    echo '<td style="padding:4px 8px;border:1px solid #D9E2F3;font-family:Calibri;font-size:11pt;vertical-align:top;">' . htmlspecialchars($val) . '</td>';
+                }
             }
             echo '</tr>';
         }

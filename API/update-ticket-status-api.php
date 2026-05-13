@@ -16,6 +16,8 @@
         $ticketId  = $_POST['ticket_id']  ?? '';   // DB id (int)
         $newStatus = $_POST['new_status'] ?? '';
         $updatedBy = $_POST['updated_by'] ?? $_SESSION['user_information']['EmployeeID'] ?? '';
+        $remarks   = $_POST['remarks']    ?? '';
+        $signatureReq = $_POST['signature_requirement'] ?? null;
 
         if (!$ticketId || !$newStatus) {
             http_response_code(400);
@@ -24,14 +26,17 @@
         }
 
         // ── Validate transition ────────────────────────────────────
+        // Main flow: waiting → in_progress → completed → enroute
+        // Optional: in_progress → pending → in_progress (hold/resume)
         $validTransitions = [
-            'waiting'     => 'in_progress',
-            'in_progress' => 'completed',
-            'completed'   => 'enroute',
+            'waiting'     => ['in_progress'],
+            'in_progress' => ['completed', 'pending', 'enroute'],
+            'pending'     => ['in_progress'],
+            'enroute'     => ['completed'],
         ];
 
         // Fetch current status
-        $stmt = $conn->prepare("SELECT status, urgent, date_and_time_of_email FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
+        $stmt = $conn->prepare("SELECT status, urgent, date_and_time_of_email, signature_requirement FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
         $stmt->execute([$ticketId]);
         $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -43,7 +48,7 @@
 
         $currentStatus = $ticket['status'];
 
-        if (!isset($validTransitions[$currentStatus]) || $validTransitions[$currentStatus] !== $newStatus) {
+        if (!isset($validTransitions[$currentStatus]) || !in_array($newStatus, $validTransitions[$currentStatus])) {
             http_response_code(400);
             echo json_encode([
                 'success' => false,
@@ -51,6 +56,31 @@
             ]);
             exit;
         }
+
+        // Enforce signature requirement paths from in_progress
+        if ($currentStatus === 'in_progress') {
+            $reqSig = intval($ticket['signature_requirement']) === 1;
+            if ($newStatus === 'enroute' && !$reqSig) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'This ticket does not require signature']);
+                exit;
+            }
+            if ($newStatus === 'completed' && $reqSig) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'message' => 'This ticket requires a signature (must be enrouted first)']);
+                exit;
+            }
+        }
+
+        // ── Remarks are required for every status change ──────────
+        if (empty(trim($remarks))) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'message' => 'Remarks are required for status changes']);
+            exit;
+        }
+
+        // ── Begin transaction ─────────────────────────────────────
+        $conn->beginTransaction();
 
         // ── Build update query ─────────────────────────────────────
         $now = date('Y-m-d H:i:s');
@@ -62,8 +92,8 @@
 
         $timelyResponse = null;
 
-        // When moving to in_progress: auto-calculate timely_response
-        if ($newStatus === 'in_progress') {
+        // When moving to in_progress from waiting: auto-calculate timely_response + save signature_requirement
+        if ($newStatus === 'in_progress' && $currentStatus === 'waiting') {
             $timelyResponse = 1; // default timely
             $emailDT = $ticket['date_and_time_of_email'];
 
@@ -76,6 +106,11 @@
             }
 
             $updates['timely_response'] = $timelyResponse;
+
+            // Save signature requirement choice
+            if ($signatureReq !== null) {
+                $updates['signature_requirement'] = intval($signatureReq) ? 1 : 0;
+            }
         }
 
         // When moving to completed: set completed_at/completed_by
@@ -84,15 +119,7 @@
             $updates['completed_by'] = $updatedBy;
         }
 
-        // When moving to enroute: save remarks
-        if ($newStatus === 'enroute') {
-            $remarks = $_POST['remarks'] ?? '';
-            if (!empty(trim($remarks))) {
-                $updates['remarks'] = trim($remarks);
-            }
-        }
-
-        // ── Execute update ─────────────────────────────────────────
+        // ── Execute ticket update ─────────────────────────────────
         $setClauses = [];
         $params     = [];
         foreach ($updates as $col => $val) {
@@ -105,13 +132,57 @@
         $stmt = $conn->prepare($sql);
         $stmt->execute($params);
 
+        // ── Save remark to acts_remarks ───────────────────────────
+        $remarkType = ($newStatus === 'pending') ? 'pending' : 'status_change';
+
+        $stmtRemark = $conn->prepare("
+            INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)
+            VALUES (?, ?, ?, ?)
+        ");
+        $stmtRemark->execute([$ticketId, $remarkType, trim($remarks), $updatedBy]);
+
+        $remarkId = $conn->lastInsertId();
+
+        // ── Handle remark attachments ─────────────────────────────
+        if (isset($_FILES['remark_attachments'])) {
+            $files = $_FILES['remark_attachments'];
+            $fileCount = is_array($files['name']) ? count($files['name']) : 0;
+
+            $uploadDir = __DIR__ . '/../Uploads/remarks/' . $ticketId . '/';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
+            }
+
+            for ($j = 0; $j < $fileCount; $j++) {
+                if ($files['error'][$j] !== UPLOAD_ERR_OK) continue;
+
+                $originalName = basename($files['name'][$j]);
+                $ext          = pathinfo($originalName, PATHINFO_EXTENSION);
+                $safeName     = uniqid('remark_') . '.' . $ext;
+                $destination  = $uploadDir . $safeName;
+
+                if (!move_uploaded_file($files['tmp_name'][$j], $destination)) {
+                    throw new Exception('Failed to upload file: ' . $originalName);
+                }
+
+                $relativePath = 'Uploads/remarks/' . $ticketId . '/' . $safeName;
+
+                $conn->prepare("
+                    INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks_attachments] (remark_id, image_path)
+                    VALUES (?, ?)
+                ")->execute([$remarkId, $relativePath]);
+            }
+        }
+
         // ── Log: status ─────────────────────────────────────────────
         $conn->prepare("
             INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
-                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by)
-            SELECT id, ?, 'status', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, remarks, completed_at, completed_by
+                (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
+            SELECT id, ?, 'status', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
             FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
+
+        $conn->commit();
 
         http_response_code(200);
         echo json_encode([
@@ -122,6 +193,9 @@
         ]);
 
     } catch (Exception $e) {
+        if (isset($conn) && $conn->inTransaction()) {
+            $conn->rollBack();
+        }
         http_response_code(500);
         echo json_encode(['success' => false, 'message' => $e->getMessage()]);
     }
