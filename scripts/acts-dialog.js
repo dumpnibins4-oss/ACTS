@@ -285,7 +285,16 @@
 
             setTimeout(() => card.classList.add('show'), 50);
 
+            const outsideClick = (e) => {
+                if (!card.contains(e.target)) {
+                    close();
+                    resolve({ isConfirmed: false, value: null });
+                }
+            };
+            setTimeout(() => document.addEventListener('click', outsideClick), 10);
+
             function close() {
+                document.removeEventListener('click', outsideClick);
                 card.classList.remove('show');
                 card.classList.add('hide');
                 setTimeout(() => card.remove(), 300);

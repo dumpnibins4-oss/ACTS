@@ -26,7 +26,7 @@
                    title, status, urgent, submitter, customer, email_title,
                    sales_in_charge, date_and_time_of_email, timely_response,
                    deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            FROM [LRNPH_QA].[dbo].[acts_ticket_logs]
             WHERE ticket_id = ?
             ORDER BY changed_at DESC
         ");
@@ -58,7 +58,7 @@
                 // Find the remark closest in time to this log entry
                 $remarkStmt = $conn->prepare("
                     SELECT TOP 1 r.id, r.remark_type, r.remark_body, r.created_at, r.created_by
-                    FROM [LRNPH_OJT].[dbo].[acts_remarks] r
+                    FROM [LRNPH_QA].[dbo].[acts_remarks] r
                     WHERE r.ticket_id = ?
                       AND r.created_at <= DATEADD(SECOND, 5, ?)
                       AND r.created_at >= DATEADD(SECOND, -5, ?)
@@ -73,7 +73,7 @@
                     // Fetch remark attachments
                     $attStmt = $conn->prepare("
                         SELECT id, image_path
-                        FROM [LRNPH_OJT].[dbo].[acts_remarks_attachments]
+                        FROM [LRNPH_QA].[dbo].[acts_remarks_attachments]
                         WHERE remark_id = ?
                         ORDER BY id ASC
                     ");

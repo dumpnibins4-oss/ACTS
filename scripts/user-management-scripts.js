@@ -13,8 +13,6 @@ const myRole     = container?.dataset.role  || 'user';
 const IT_DEPT = 'Information Technology Department - LRN';
 
 const ROLE_LABELS = {
-    super_admin: 'Super Admin',
-    admin:       'Admin',
     editor:      'Editor',
     user:        'User'
 };
@@ -119,7 +117,7 @@ function renderUsers(users) {
 
         row.innerHTML = `
             <div class="col-span-2 flex items-center gap-2">
-                <div class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500 text-white text-[10px] font-bold select-none overflow-hidden border border-indigo-500">
+                <div class="flex items-center justify-center w-7 h-7 rounded-full bg-indigo-500 text-white text-xs font-bold select-none overflow-hidden border border-indigo-500">
                     <img src="http://10.2.0.8/lrnph/emp_photos/${u.EmployeeID}.jpg" alt=""
                          onerror="this.style.display='none'; this.parentElement.textContent='${(u.FirstName?.[0] || '') + (u.LastName?.[0] || '')}'">
                 </div>
@@ -132,7 +130,7 @@ function renderUsers(users) {
                 <p class="text-xs font-medium text-zinc-500 truncate">${dept}</p>
             </div>
             <div class="col-span-2">
-                <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full border ${roleStyle}">${roleLabel}</span>
+                <span class="text-xs font-semibold px-2.5 py-1 rounded-full border ${roleStyle}">${roleLabel}</span>
             </div>
             <div class="col-span-1 flex items-center justify-end gap-3">
                 ${buildActionButtons(u, isSelf)}
@@ -146,14 +144,14 @@ function renderUsers(users) {
 
 /* ── Action Buttons ─────────────────────────────────────────── */
 function buildActionButtons(user, isSelf) {
-    if (isSelf) return '<span class="text-[10px] text-zinc-300">—</span>';
+    if (isSelf) return '<span class="text-xs text-zinc-300">—</span>';
 
     if (user.role === 'super_admin' && myRole !== 'super_admin') {
-        return '<span class="text-[10px] text-zinc-300">—</span>';
+        return '<span class="text-xs text-zinc-300">—</span>';
     }
 
     if (user.role === 'admin' && myRole === 'admin') {
-        return '<span class="text-[10px] text-zinc-300">—</span>';
+        return '<span class="text-xs text-zinc-300">—</span>';
     }
 
     let html = '';
@@ -187,7 +185,7 @@ function buildActionButtons(user, isSelf) {
                  </button>`;
     }
 
-    return html || '<span class="text-[10px] text-zinc-300">—</span>';
+    return html || '<span class="text-xs text-zinc-300">—</span>';
 }
 
 /* ── Pagination ─────────────────────────────────────────────── */
@@ -227,6 +225,7 @@ function usersPageChange(page) {
     const totalPages = Math.ceil(filteredUsers.length / PAGE_SIZE);
     if (page < 1 || page > totalPages) return;
     usersCurrentPage = page;
+    window.usersCurrentPage = page;
     renderUsers(filteredUsers);
 }
 
@@ -246,10 +245,6 @@ function openAddUserModal() {
     roleSelect.innerHTML = '<option value="">Select a role…</option>';
 
     if (myRole === 'super_admin') {
-        roleSelect.innerHTML += '<option value="admin">Admin</option>';
-        roleSelect.innerHTML += '<option value="editor">Editor</option>';
-        roleSelect.innerHTML += '<option value="user">User</option>';
-    } else if (myRole === 'admin') {
         roleSelect.innerHTML += '<option value="editor">Editor</option>';
         roleSelect.innerHTML += '<option value="user">User</option>';
     }
@@ -304,10 +299,10 @@ async function searchEmployees(query) {
                     </div>
                     <div class="flex flex-col">
                         <p class="text-xs font-semibold text-zinc-700">${name}</p>
-                        <p class="text-[10px] text-zinc-400 font-medium">${emp.Department || '—'}</p>
+                        <p class="text-xs text-zinc-400 font-medium">${emp.Department || '—'}</p>
                     </div>
                 </div>
-                <p class="text-[10px] text-zinc-400 font-mono">${emp.EmployeeID}</p>
+                <p class="text-xs text-zinc-400 font-mono">${emp.EmployeeID}</p>
             `;
             opt.addEventListener('click', () => selectEmployee(emp));
             dropdown.appendChild(opt);
@@ -338,7 +333,7 @@ function selectEmployee(emp) {
     Array.from(roleSelect.options).forEach(opt => opt.disabled = false);
     roleSelect.value = '';
     hint.textContent = '';
-    hint.className   = 'text-[10px] font-medium';
+    hint.className   = 'text-xs font-medium';
 
     // Only super_admin has department-based restrictions
     if (myRole === 'super_admin') {
@@ -437,13 +432,6 @@ async function changeUserRole(userId, currentRole, department, userName, empId, 
     const roleOptions = {};
 
     if (myRole === 'super_admin') {
-        if (department === IT_DEPT) {
-            roleOptions.admin = 'Admin';
-        } else {
-            roleOptions.editor = 'Editor';
-            roleOptions.user   = 'User';
-        }
-    } else if (myRole === 'admin') {
         roleOptions.editor = 'Editor';
         roleOptions.user   = 'User';
     }

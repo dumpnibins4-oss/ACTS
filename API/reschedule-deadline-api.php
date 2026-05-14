@@ -32,7 +32,7 @@
         }
 
         // ── Verify ticket exists and status allows rescheduling ───
-        $stmt = $conn->prepare("SELECT id, status, deadline FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id, status, deadline FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?");
         $stmt->execute([$ticketId]);
         $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -74,14 +74,14 @@
 
         // 1. Update deadline on the ticket
         $conn->prepare("
-            UPDATE [LRNPH_OJT].[dbo].[acts_ticket]
+            UPDATE [LRNPH_QA].[dbo].[acts_ticket]
             SET deadline = ?, updated_at = ?, updated_by = ?
             WHERE id = ?
         ")->execute([$deadlineFormatted, $now, $updatedBy, $ticketId]);
 
         // 2. Save remark to acts_remarks
         $stmtRemark = $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)
+            INSERT INTO [LRNPH_QA].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)
             VALUES (?, 'reschedule', ?, ?)
         ");
         $stmtRemark->execute([$ticketId, trim($reason), $updatedBy]);
@@ -112,17 +112,17 @@
             $relativePath = 'Uploads/remarks/' . $ticketId . '/' . $safeName;
 
             $conn->prepare("
-                INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks_attachments] (remark_id, image_path)
+                INSERT INTO [LRNPH_QA].[dbo].[acts_remarks_attachments] (remark_id, image_path)
                 VALUES (?, ?)
             ")->execute([$remarkId, $relativePath]);
         }
 
         // 4. Log: reschedule
         $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
             SELECT id, ?, 'reschedule', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+            FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
 
         $conn->commit();

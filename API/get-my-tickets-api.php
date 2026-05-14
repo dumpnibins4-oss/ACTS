@@ -25,7 +25,7 @@
                 t.customer, t.email_title, t.sales_in_charge,
                 t.date_and_time_of_email, t.timely_response,
                 t.deadline, t.signature_requirement
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] t
+            FROM [LRNPH_QA].[dbo].[acts_ticket] t
             WHERE t.created_by = ?
         ";
         $params = [$empId];
@@ -49,7 +49,7 @@
         foreach ($tickets as $ticket) {
             $stmtSec = $conn->prepare("
                 SELECT id, sub_title, body
-                FROM [LRNPH_OJT].[dbo].[acts_ticket_section]
+                FROM [LRNPH_QA].[dbo].[acts_ticket_section]
                 WHERE ticket_id = ?
                 ORDER BY id ASC
             ");
@@ -60,7 +60,7 @@
             foreach ($sections as $sec) {
                 $stmtImg = $conn->prepare("
                     SELECT id, image
-                    FROM [LRNPH_OJT].[dbo].[acts_ticket_section_images]
+                    FROM [LRNPH_QA].[dbo].[acts_ticket_section_images]
                     WHERE ticket_section_id = ?
                     ORDER BY id ASC
                 ");
@@ -74,7 +74,7 @@
             // Fetch remarks from acts_remarks + attachments
             $stmtRemarks = $conn->prepare("
                 SELECT r.id, r.remark_type, r.remark_body, r.created_at, r.created_by
-                FROM [LRNPH_OJT].[dbo].[acts_remarks] r
+                FROM [LRNPH_QA].[dbo].[acts_remarks] r
                 WHERE r.ticket_id = ?
                 ORDER BY r.created_at DESC
             ");
@@ -85,7 +85,7 @@
                 // Fetch attachments
                 $stmtAtt = $conn->prepare("
                     SELECT id, image_path
-                    FROM [LRNPH_OJT].[dbo].[acts_remarks_attachments]
+                    FROM [LRNPH_QA].[dbo].[acts_remarks_attachments]
                     WHERE remark_id = ?
                     ORDER BY id ASC
                 ");

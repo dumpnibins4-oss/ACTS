@@ -57,4 +57,11 @@ document.getElementById("login-form").addEventListener("submit", async (e) => {
 
         _toast('error', 'Error!', { description: err.message });
     }
-})
+})
+
+document.getElementById('username').addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+        e.preventDefault();
+        document.getElementById('password').focus();
+    }
+});

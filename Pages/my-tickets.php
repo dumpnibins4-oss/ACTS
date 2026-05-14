@@ -8,7 +8,7 @@
     <div class="flex flex-row items-end justify-between w-full h-auto">
         <div class="flex flex-col items-start justify-start w-auto h-auto gap-1">
             <h1 class="text-2xl font-bold text-zinc-800 tracking-wide">My Tickets</h1>
-            <p class="text-sm text-zinc-400 font-medium">Track and manage your submitted tickets</p>
+            <p class="text-xs text-zinc-400 font-medium">Track and manage your submitted tickets</p>
         </div>
         <div class="flex flex-row items-center gap-3">
             <!-- Search -->
@@ -19,7 +19,7 @@
             </div>
             <!-- Refresh -->
             <button onclick="loadMyTickets()" class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
-                <i class="fa-solid fa-rotate text-[10px]"></i> Refresh
+                <i class="fa-solid fa-rotate text-xs"></i> Refresh
             </button>
         </div>
     </div>
@@ -28,47 +28,47 @@
     <div class="flex flex-row gap-3 w-full" id="my-tickets-stats">
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-indigo-50 rounded-lg">
-                <i class="fa-solid fa-ticket text-indigo-500 text-sm"></i>
+                <i class="fa-solid fa-ticket text-indigo-500 text-xs"></i>
             </div>
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="stat-total">0</p>
-                <p class="text-[10px] text-zinc-400 font-medium">Total Active</p>
+                <p class="text-xs text-zinc-400 font-medium">Total Active</p>
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-amber-50 rounded-lg">
-                <i class="fa-solid fa-clock text-amber-500 text-sm"></i>
+                <i class="fa-solid fa-clock text-amber-500 text-xs"></i>
             </div>
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="stat-waiting">0</p>
-                <p class="text-[10px] text-zinc-400 font-medium">Waiting</p>
+                <p class="text-xs text-zinc-400 font-medium">Waiting</p>
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-blue-50 rounded-lg">
-                <i class="fa-solid fa-spinner text-blue-500 text-sm"></i>
+                <i class="fa-solid fa-spinner text-blue-500 text-xs"></i>
             </div>
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="stat-progress">0</p>
-                <p class="text-[10px] text-zinc-400 font-medium">Ongoing</p>
+                <p class="text-xs text-zinc-400 font-medium">Ongoing</p>
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-orange-50 rounded-lg">
-                <i class="fa-solid fa-pause text-orange-500 text-sm"></i>
+                <i class="fa-solid fa-pause text-orange-500 text-xs"></i>
             </div>
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="stat-pending">0</p>
-                <p class="text-[10px] text-zinc-400 font-medium">Pending</p>
+                <p class="text-xs text-zinc-400 font-medium">Pending</p>
             </div>
         </div>
         <div class="flex items-center gap-3 bg-white border border-zinc-200 rounded-xl px-4 py-3 flex-1">
             <div class="flex items-center justify-center w-9 h-9 bg-red-50 rounded-lg">
-                <i class="fa-solid fa-bolt text-red-500 text-sm"></i>
+                <i class="fa-solid fa-bolt text-red-500 text-xs"></i>
             </div>
             <div>
                 <p class="text-lg font-bold text-zinc-800" id="stat-urgent">0</p>
-                <p class="text-[10px] text-zinc-400 font-medium">Urgent</p>
+                <p class="text-xs text-zinc-400 font-medium">Urgent</p>
             </div>
         </div>
     </div>
@@ -77,12 +77,12 @@
     <div class="flex flex-col w-full flex-1 bg-white border border-zinc-200 rounded-xl overflow-hidden">
         <!-- Table Header -->
         <div class="grid grid-cols-[1fr_120px_100px_100px_140px_80px] items-center w-full h-auto px-5 py-3 bg-zinc-50 border-b border-zinc-200 gap-3">
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Ticket</p>
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Status</p>
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Urgency</p>
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Sections</p>
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase">Created</p>
-            <p class="text-[10px] font-bold text-zinc-400 tracking-widest uppercase text-center">Action</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase">Ticket</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase">Status</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase">Urgency</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase">Sections</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase">Created</p>
+            <p class="text-xs font-bold text-zinc-400 tracking-widest uppercase text-center">Action</p>
         </div>
 
         <!-- Table Body -->
@@ -97,7 +97,7 @@
                 <div class="flex items-center justify-center w-12 h-12 bg-zinc-100 rounded-xl">
                     <i class="fa-solid fa-ticket text-zinc-300 text-lg"></i>
                 </div>
-                <p class="text-sm font-semibold text-zinc-400">No active tickets</p>
+                <p class="text-xs font-semibold text-zinc-400">No active tickets</p>
                 <p class="text-xs text-zinc-300 font-medium">Your submitted tickets will appear here</p>
             </div>
         </div>
@@ -108,11 +108,11 @@
         <p class="text-[11px] text-zinc-400 font-medium" id="my-tickets-page-info"></p>
         <div class="flex items-center gap-1">
             <button id="my-tickets-prev" onclick="myTicketsPageChange(-1)" class="flex items-center justify-center w-8 h-8 text-xs text-zinc-500 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-chevron-left text-[10px]"></i>
+                <i class="fa-solid fa-chevron-left text-xs"></i>
             </button>
             <div id="my-tickets-page-btns" class="flex items-center gap-1"></div>
             <button id="my-tickets-next" onclick="myTicketsPageChange(1)" class="flex items-center justify-center w-8 h-8 text-xs text-zinc-500 bg-white border border-zinc-200 rounded-lg hover:bg-zinc-50 transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed">
-                <i class="fa-solid fa-chevron-right text-[10px]"></i>
+                <i class="fa-solid fa-chevron-right text-xs"></i>
             </button>
         </div>
     </div>
@@ -128,17 +128,17 @@
                     <i class="fa-solid fa-ticket text-indigo-500 text-xs"></i>
                 </div>
                 <div>
-                    <p class="text-sm font-semibold text-zinc-800" id="modal-ticket-title"></p>
-                    <p class="text-[10px] text-zinc-400 font-medium" id="modal-ticket-date"></p>
+                    <p class="text-xs font-semibold text-zinc-800" id="modal-ticket-title"></p>
+                    <p class="text-xs text-zinc-400 font-medium" id="modal-ticket-date"></p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <span id="modal-ticket-status" class="text-[10px] font-semibold px-2.5 py-1 rounded-full"></span>
+                <span id="modal-ticket-status" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
                 <button id="modal-ticket-edit-btn" class="flex items-center justify-center text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
-                    <i class="fa-solid fa-pen text-[10px] mr-1"></i> Edit
+                    <i class="fa-solid fa-pen text-xs mr-1"></i> Edit
                 </button>
                 <button id="modal-ticket-logs-btn" class="flex items-center justify-center text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
-                    <i class="fa-solid fa-clock-rotate-left text-[10px] mr-1"></i> Logs
+                    <i class="fa-solid fa-clock-rotate-left text-xs mr-1"></i> Logs
                 </button>
                 <button onclick="closeTicketModal()" class="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer">
                     <i class="fa-solid fa-xmark text-base"></i>
@@ -148,9 +148,9 @@
         <!-- Modal Body -->
         <div class="flex flex-col gap-4 px-6 py-5 overflow-y-auto" id="modal-ticket-body"></div>
         <!-- Modal Footer -->
-        <div class="flex items-center justify-between px-6 py-3 border-t border-zinc-200 bg-zinc-50" id="modal-ticket-footer">
-            <div class="flex flex-col" id="modal-ticket-footer-info"></div>
+        <div class="flex flex-col items-end justify-start px-6 py-3 border-t border-zinc-200 bg-zinc-50 gap-2" id="modal-ticket-footer">
             <div id="modal-ticket-action"></div>
+            <div class="flex flex-col" id="modal-ticket-footer-info"></div>
         </div>
     </div>
 </div>

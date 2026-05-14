@@ -59,7 +59,7 @@
                 const diff = deadlineMs - Date.now()
                 const { text, overdue } = formatCountdown(diff)
                 el.textContent = overdue ? '⚠ Overdue' : `Acknowledge before: ⏱ ${text}`
-                el.className = `hist-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                el.className = `hist-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
                     overdue ? 'bg-red-50 text-red-500' : diff < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-indigo-500'
                 }`
             })
@@ -68,7 +68,7 @@
                 const diff = deadlineMs - Date.now()
                 const { text, overdue } = formatCountdown(diff)
                 el.textContent = overdue ? '⚠ Deadline passed' : `Deadline in: ⏱ ${text}`
-                el.className = `hist-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                el.className = `hist-deadline-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
                     overdue ? 'bg-red-50 text-red-500' : diff < 3600000 ? 'bg-amber-50 text-amber-600' : 'bg-violet-50 text-violet-500'
                 }`
             })
@@ -209,7 +209,7 @@
                     <div class="flex flex-row items-center justify-start gap-2 w-full h-auto">
                         <p class="text-xs font-semibold text-zinc-800 truncate">${ticket.title}</p>
                         ${showTimer ? `
-                            <span class="hist-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                            <span class="hist-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
                                 initCountdown.overdue
                                     ? 'bg-red-50 text-red-500'
                                     : (deadlineMs - Date.now()) < 3600000
@@ -219,21 +219,21 @@
                                 ${initCountdown.overdue ? '⚠ Overdue' : `Awknowledge before: ⏱ ${initCountdown.text}`}
                             </span>` : ''}
                         ${showDeadlineTimer ? `
-                            <span class="hist-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
+                            <span class="hist-deadline-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-0.5 w-fit ${
                                 initDeadline.overdue ? 'bg-red-50 text-red-500' : 'bg-violet-50 text-violet-500'
                             }" data-deadline="${deadlineStoredMs}">
                                 ${initDeadline.overdue ? '⚠ Deadline passed' : `Deadline in: ⏱ ${initDeadline.text}`}
                             </span>` : ''}
                     </div>
-                    <p class="text-[10px] text-zinc-400 font-medium truncate">${ticket.customer || ''} ${ticket.email_title ? '— ' + ticket.email_title : ''}</p>
+                    <p class="text-xs text-zinc-400 font-medium truncate">${ticket.customer || ''} ${ticket.email_title ? '— ' + ticket.email_title : ''}</p>
                 </div>
                 <div>
-                    <span class="text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}">${status.label}</span>
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}">${status.label}</span>
                 </div>
                 <div>
                     ${ticket.urgent == 1
-                        ? '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-500"><i class="fa-solid fa-bolt text-[8px] mr-0.5"></i> Urgent</span>'
-                        : '<span class="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-500">Non-Urgent</span>'
+                        ? '<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-red-50 text-red-500"><i class="fa-solid fa-bolt text-[8px] mr-0.5"></i> Urgent</span>'
+                        : '<span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-zinc-100 text-zinc-500">Non-Urgent</span>'
                     }
                 </div>
                 <div>
@@ -322,7 +322,7 @@
 
         const statusEl = document.getElementById('hist-modal-status')
         statusEl.textContent = status.label
-        statusEl.className   = `text-[10px] font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}`
+        statusEl.className   = `text-xs font-semibold px-2.5 py-1 rounded-full ${status.bg} ${status.text}`
 
         // Logs button
         const logsBtn = document.getElementById('hist-modal-logs-btn')
@@ -338,53 +338,53 @@
         bodyEl.innerHTML += `
             <div class="grid grid-cols-2 gap-3">
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">SUBMITTER</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">SUBMITTER</p>
                     <p class="text-xs font-semibold text-zinc-700">${ticket.submitter || '—'}</p>
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">CUSTOMER</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">CUSTOMER</p>
                     <p class="text-xs font-semibold text-zinc-700">${ticket.customer || '—'}</p>
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">TICKET TITLE</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">TICKET TITLE</p>
                     <p class="text-xs font-semibold text-zinc-700">${ticket.email_title || '—'}</p>
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">SALES IN CHARGE</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">SALES IN CHARGE</p>
                     <p class="text-xs font-semibold text-zinc-700">${ticket.sales_in_charge || '—'}</p>
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">EMAIL DATE & TIME</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">EMAIL DATE & TIME</p>
                     <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.date_and_time_of_email)}</p>
                     ${ticket.status === 'waiting' && ticket.date_and_time_of_email ? `
-                        <span class="hist-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-indigo-50 text-indigo-500"
+                        <span class="hist-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-indigo-50 text-indigo-500"
                             data-deadline="${getDeadlineMs(ticket)}">
                             Acknowledge before: ⏱ ${formatCountdown(getDeadlineMs(ticket) - Date.now()).text}
                         </span>` : ''}
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">DEADLINE</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">DEADLINE</p>
                     <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.deadline)}</p>
                     ${ticket.status === 'waiting' && ticket.deadline ? `
-                        <span class="hist-deadline-countdown text-[10px] font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-violet-50 text-violet-500"
+                        <span class="hist-deadline-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-violet-50 text-violet-500"
                             data-deadline="${getStoredDeadlineMs(ticket)}">
                             Deadline in: ⏱ ${formatCountdown(getStoredDeadlineMs(ticket) - Date.now()).text}
                         </span>` : ''}
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">CLASSIFICATION</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">CLASSIFICATION</p>
                     ${ticket.urgent == 1
                         ? '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-bolt text-[8px]"></i> Urgent</span>'
                         : '<span class="text-xs font-semibold text-zinc-600">Non-Urgent</span>'
                     }
                 </div>
                 <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-[10px] text-zinc-400 font-bold tracking-wide">TIMELY RESPONSE</p>
+                    <p class="text-xs text-zinc-400 font-bold tracking-wide">TIMELY RESPONSE</p>
                     ${ticket.timely_response == null
                         ? '<span class="text-xs font-medium text-zinc-400">—</span>'
                         : ticket.timely_response == 1
-                            ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-[10px]"></i> Yes</span>'
-                            : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-[10px]"></i> No</span>'
+                            ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-xs"></i> Yes</span>'
+                            : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-xs"></i> No</span>'
                     }
                 </div>
             </div>
@@ -396,7 +396,7 @@
             bodyEl.innerHTML += `
                 <div class="flex items-center justify-start">
                     <button id="hist-reschedule-btn" class="flex items-center gap-1.5 text-[11px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition-all cursor-pointer">
-                        <i class="fa-solid fa-calendar-day text-[10px]"></i> Reschedule Deadline
+                        <i class="fa-solid fa-calendar-day text-xs"></i> Reschedule Deadline
                     </button>
                 </div>
             `
@@ -434,7 +434,7 @@
                     others.forEach(a => {
                         attHTML += `<a href="./${a.image_path}" target="_blank" class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1 hover:bg-indigo-100 transition-all">
                             <i class="fa-solid fa-paperclip text-indigo-400 text-[8px]"></i>
-                            <span class="text-[10px] font-medium text-indigo-600 truncate max-w-24">${a.image_path.split('/').pop()}</span>
+                            <span class="text-xs font-medium text-indigo-600 truncate max-w-24">${a.image_path.split('/').pop()}</span>
                         </a>`
                     })
                     attHTML += '</div>'
@@ -448,13 +448,13 @@
                         </div>
                         <div class="flex flex-col gap-0.5 pb-3 min-w-0 flex-1">
                             <div class="flex items-center gap-2">
-                                <span class="text-[10px] font-semibold ${meta.iconColor}">${meta.label}</span>
-                                <span class="text-[10px] text-zinc-300">·</span>
-                                <span class="text-[10px] text-zinc-400 font-medium">${rmDate}</span>
+                                <span class="text-xs font-semibold ${meta.iconColor}">${meta.label}</span>
+                                <span class="text-xs text-zinc-300">·</span>
+                                <span class="text-xs text-zinc-400 font-medium">${rmDate}</span>
                             </div>
                             <p class="text-[11px] text-zinc-600 font-medium whitespace-pre-wrap">${rm.remark_body || ''}</p>
                             ${attHTML}
-                            <p class="text-[10px] text-zinc-400 font-medium mt-0.5">${rm.created_by_name || '—'}</p>
+                            <p class="text-xs text-zinc-400 font-medium mt-0.5">${rm.created_by_name || '—'}</p>
                         </div>
                     </div>`
             })
@@ -496,8 +496,8 @@
                         otherFiles.forEach(img => {
                             imagesHTML += `
                                 <a href="./${img.image}" target="_blank" class="flex items-center gap-1.5 bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5 hover:bg-indigo-100 transition-all">
-                                    <i class="fa-solid fa-paperclip text-indigo-400 text-[10px]"></i>
-                                    <span class="text-[10px] font-medium text-indigo-600 truncate max-w-32">${img.image.split('/').pop()}</span>
+                                    <i class="fa-solid fa-paperclip text-indigo-400 text-xs"></i>
+                                    <span class="text-xs font-medium text-indigo-600 truncate max-w-32">${img.image.split('/').pop()}</span>
                                 </a>
                             `
                         })
@@ -511,7 +511,7 @@
                     <div class="flex flex-col gap-2 p-4 bg-zinc-50 border border-zinc-200 rounded-xl">
                         <div class="flex items-center gap-2">
                             <div class="flex items-center justify-center w-5 h-5 bg-indigo-500/10 border border-indigo-300 rounded-md">
-                                <i class="fa-regular fa-envelope text-indigo-500 text-[10px]"></i>
+                                <i class="fa-regular fa-envelope text-indigo-500 text-xs"></i>
                             </div>
                             <p class="text-xs font-semibold text-zinc-600">${sec.sub_title || 'Section ' + (idx + 1)}</p>
                         </div>
@@ -530,7 +530,7 @@
         // ── Footer info ──
         const footerInfo = document.getElementById('hist-modal-footer-info')
         if (ticket.updated_at) {
-            footerInfo.innerHTML = `<p class="text-[10px] text-zinc-400 font-medium">Last updated <span class="text-zinc-600 font-semibold">${fmtDate(ticket.updated_at)}</span></p>`
+            footerInfo.innerHTML = `<p class="text-xs text-zinc-400 font-medium">Last updated <span class="text-zinc-600 font-semibold">${fmtDate(ticket.updated_at)}</span></p>`
         } else {
             footerInfo.innerHTML = ''
         }
@@ -548,14 +548,14 @@
                     btnsHTML += `
                         <button id="hist-secondary-btn" data-ticket-id="${ticket.id}" data-new-status="${secondary.value}"
                             class="flex items-center gap-1.5 text-xs font-medium text-white ${secondary.color} rounded-lg px-3 py-2 transition-all cursor-pointer">
-                            <i class="fa-solid ${secondary.icon} text-[10px]"></i> ${secondary.label}
+                            <i class="fa-solid ${secondary.icon} text-xs"></i> ${secondary.label}
                         </button>`
                 }
                 if (next) {
                     btnsHTML += `
                         <button id="hist-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
                             class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
-                            <i class="fa-solid ${next.icon} text-[10px]"></i> ${next.label}
+                            <i class="fa-solid ${next.icon} text-xs"></i> ${next.label}
                         </button>`
                 }
                 btnsHTML += '</div>'
@@ -568,7 +568,7 @@
             }
         } else {
             actionEl.innerHTML = `
-                <span class="text-[10px] font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
+                <span class="text-xs font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
                     <i class="fa-solid fa-check-double text-[9px]"></i> Final Status
                 </span>
             `
@@ -647,18 +647,18 @@
                 <p class="text-[13px] text-zinc-500 mb-5 leading-relaxed">Set a new deadline and provide a reason with supporting attachments.</p>
                 <div class="flex flex-col gap-3">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-zinc-400 font-bold tracking-wide">NEW DEADLINE <span class="text-red-500">*</span></label>
+                        <label class="text-xs text-zinc-400 font-bold tracking-wide">NEW DEADLINE <span class="text-red-500">*</span></label>
                         <input type="text" id="hist-resched-deadline" placeholder="Select new deadline" class="${inputCls}" />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-zinc-400 font-bold tracking-wide">REASON <span class="text-red-500">*</span></label>
+                        <label class="text-xs text-zinc-400 font-bold tracking-wide">REASON <span class="text-red-500">*</span></label>
                         <textarea id="hist-resched-reason" rows="3" placeholder="Why is this deadline being rescheduled?" class="${inputCls} resize-none"></textarea>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] text-zinc-400 font-bold tracking-wide">ATTACHMENTS <span class="text-red-500">*</span></label>
+                        <label class="text-xs text-zinc-400 font-bold tracking-wide">ATTACHMENTS <span class="text-red-500">*</span></label>
                         <div class="relative flex flex-col items-center justify-center w-full min-h-14 border-2 border-dashed border-zinc-300 rounded-lg bg-zinc-50 hover:border-indigo-400 transition-all cursor-pointer gap-1 py-2">
                             <input type="file" id="hist-resched-files" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
-                            <p class="text-[10px] font-medium text-zinc-500">Drop files or <span class="text-indigo-500">browse</span></p>
+                            <p class="text-xs font-medium text-zinc-500">Drop files or <span class="text-indigo-500">browse</span></p>
                         </div>
                         <div id="hist-resched-file-list" class="flex flex-col gap-1 mt-1"></div>
                     </div>
@@ -687,8 +687,8 @@
                 reschedFiles.push(f)
                 const row = document.createElement('div')
                 row.className = 'flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5'
-                row.innerHTML = `<span class="text-[10px] font-medium text-indigo-700 truncate">${f.name}</span>
-                    <button type="button" class="text-zinc-300 hover:text-red-400 text-sm leading-none cursor-pointer">&times;</button>`
+                row.innerHTML = `<span class="text-xs font-medium text-indigo-700 truncate">${f.name}</span>
+                    <button type="button" class="text-zinc-300 hover:text-red-400 text-xs leading-none cursor-pointer">&times;</button>`
                 row.querySelector('button').addEventListener('click', () => {
                     const idx = reschedFiles.indexOf(f)
                     if (idx > -1) reschedFiles.splice(idx, 1)
@@ -760,7 +760,7 @@
                     <div class="flex items-center justify-between bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2.5 mt-1">
                         <div class="flex flex-col">
                             <p class="text-xs font-bold text-zinc-700">Requires Signature</p>
-                            <p class="text-[10px] text-zinc-500 font-medium">Will this ticket need to be enrouted?</p>
+                            <p class="text-xs text-zinc-500 font-medium">Will this ticket need to be enrouted?</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="hist-remark-dlg-signature" class="sr-only peer" checked>
@@ -778,10 +778,10 @@
                         ${signatureToggleHTML}
                         <textarea id="hist-remark-dlg-text" rows="3" placeholder="Enter remarks…" class="w-full text-xs font-medium text-zinc-600 bg-white border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300 resize-none"></textarea>
                         <div class="flex flex-col gap-1">
-                            <label class="text-[10px] text-zinc-400 font-bold tracking-wide">ATTACHMENTS (optional)</label>
+                            <label class="text-xs text-zinc-400 font-bold tracking-wide">ATTACHMENTS (optional)</label>
                             <div class="relative flex flex-col items-center justify-center w-full min-h-12 border-2 border-dashed border-zinc-300 rounded-lg bg-zinc-50 hover:border-indigo-400 transition-all cursor-pointer gap-1 py-2">
                                 <input type="file" id="hist-remark-dlg-files" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" />
-                                <p class="text-[10px] font-medium text-zinc-500">Drop files or <span class="text-indigo-500">browse</span></p>
+                                <p class="text-xs font-medium text-zinc-500">Drop files or <span class="text-indigo-500">browse</span></p>
                             </div>
                             <div id="hist-remark-dlg-file-list" class="flex flex-col gap-1"></div>
                         </div>
@@ -806,8 +806,8 @@
                     remarkFiles.push(f)
                     const row = document.createElement('div')
                     row.className = 'flex items-center justify-between bg-indigo-50 border border-indigo-200 rounded-lg px-2.5 py-1.5'
-                    row.innerHTML = `<span class="text-[10px] font-medium text-indigo-700 truncate">${f.name}</span>
-                        <button type="button" class="text-zinc-300 hover:text-red-400 text-sm leading-none cursor-pointer">&times;</button>`
+                    row.innerHTML = `<span class="text-xs font-medium text-indigo-700 truncate">${f.name}</span>
+                        <button type="button" class="text-zinc-300 hover:text-red-400 text-xs leading-none cursor-pointer">&times;</button>`
                     row.querySelector('button').addEventListener('click', () => {
                         const idx = remarkFiles.indexOf(f)
                         if (idx > -1) remarkFiles.splice(idx, 1)
@@ -861,7 +861,7 @@
         footerInfo.innerHTML = ''
         actionEl.innerHTML = `
             <button id="hist-logs-back-btn" class="flex items-center gap-1.5 text-xs font-medium text-zinc-500 border border-zinc-200 rounded-lg px-4 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
-                <i class="fa-solid fa-arrow-left text-[10px]"></i> Back
+                <i class="fa-solid fa-arrow-left text-xs"></i> Back
             </button>`
         document.getElementById('hist-logs-back-btn').addEventListener('click', () => viewHistoryTicket(ticket))
 
@@ -887,7 +887,7 @@
                         <div class="flex items-center justify-center w-10 h-10 bg-zinc-100 rounded-xl">
                             <i class="fa-solid fa-clock-rotate-left text-zinc-300 text-base"></i>
                         </div>
-                        <p class="text-sm font-semibold text-zinc-400">No logs yet</p>
+                        <p class="text-xs font-semibold text-zinc-400">No logs yet</p>
                         <p class="text-xs text-zinc-300 font-medium">Activity will appear here once actions are taken</p>
                     </div>`
                 return
@@ -926,21 +926,21 @@
                     if (log.sales_in_charge) fields.push(`Sales: ${log.sales_in_charge}`)
                     if (log.urgent !== null) fields.push(`Urgency: ${log.urgent == 1 ? 'Urgent' : 'Non-Urgent'}`)
                     if (fields.length > 0) {
-                        changesHTML = `<div class="flex flex-wrap gap-1.5 mt-1.5">${fields.map(f => `<span class="text-[10px] font-medium text-zinc-500 bg-zinc-100 rounded px-1.5 py-0.5">${f}</span>`).join('')}</div>`
+                        changesHTML = `<div class="flex flex-wrap gap-1.5 mt-1.5">${fields.map(f => `<span class="text-xs font-medium text-zinc-500 bg-zinc-100 rounded px-1.5 py-0.5">${f}</span>`).join('')}</div>`
                     }
                 }
 
                 // Remark body if available
                 let remarkHTML = ''
                 if (log.remark && log.remark.remark_body) {
-                    remarkHTML = `<p class="text-[10px] text-zinc-500 font-medium mt-1 bg-zinc-50 border border-zinc-200 rounded px-2 py-1 whitespace-pre-wrap">${log.remark.remark_body}</p>`
+                    remarkHTML = `<p class="text-xs text-zinc-500 font-medium mt-1 bg-zinc-50 border border-zinc-200 rounded px-2 py-1 whitespace-pre-wrap">${log.remark.remark_body}</p>`
                 }
 
                 html += `
                     <div class="flex gap-3 relative">
                         ${!isLast ? '<div class="absolute left-[13px] top-7 bottom-0 w-px bg-zinc-200"></div>' : ''}
                         <div class="flex items-center justify-center w-7 h-7 ${meta.bg} ${meta.border} border rounded-full flex-shrink-0 z-10">
-                            <i class="fa-solid ${meta.icon} ${meta.iconColor} text-[10px]"></i>
+                            <i class="fa-solid ${meta.icon} ${meta.iconColor} text-xs"></i>
                         </div>
                         <div class="flex flex-col gap-0.5 pb-4 min-w-0 flex-1">
                             <p class="text-xs font-semibold text-zinc-700">${meta.label}</p>
@@ -948,9 +948,9 @@
                             ${changesHTML}
                             ${remarkHTML}
                             <div class="flex items-center gap-2 mt-1">
-                                <p class="text-[10px] text-zinc-400 font-medium">${fmtLog(log.changed_at)}</p>
-                                <span class="text-[10px] text-zinc-300">·</span>
-                                <p class="text-[10px] text-zinc-400 font-medium">${log.changed_by_name || log.changed_by || '—'}</p>
+                                <p class="text-xs text-zinc-400 font-medium">${fmtLog(log.changed_at)}</p>
+                                <span class="text-xs text-zinc-300">·</span>
+                                <p class="text-xs text-zinc-400 font-medium">${log.changed_by_name || log.changed_by || '—'}</p>
                             </div>
                         </div>
                     </div>`
@@ -963,7 +963,7 @@
             console.error('Error loading logs:', err)
             bodyEl.innerHTML = `
                 <div class="flex flex-col items-center justify-center py-12 gap-2">
-                    <p class="text-sm font-semibold text-red-400">Failed to load logs</p>
+                    <p class="text-xs font-semibold text-red-400">Failed to load logs</p>
                     <p class="text-xs text-zinc-400">Please try again</p>
                 </div>`
         }

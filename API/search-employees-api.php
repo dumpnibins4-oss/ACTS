@@ -25,8 +25,7 @@
             FROM [LRNPH_E].[DBO].[lrn_master_list]
             WHERE IsActive = '1'
               AND (FirstName LIKE ? OR LastName LIKE ? OR MiddleName LIKE ? OR EmployeeID LIKE ? OR BiometricsID LIKE ?)
-              AND (Department = 'Information Technology Department - LRN' OR SubDepartment LIKE '%sales%' OR Department = 'Quality Assurance Department - LRN' OR Department = 'Quality Control Department - LRN')
-              AND IsActive = 1
+              AND (Department != 'Information Technology Department - LRN')
             ORDER BY LastName ASC, FirstName ASC
         ";
         $params = ["%$search%", "%$search%", "%$search%", "%$search%", "%$search%"];

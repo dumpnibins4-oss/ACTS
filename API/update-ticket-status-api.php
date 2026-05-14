@@ -36,7 +36,7 @@
         ];
 
         // Fetch current status
-        $stmt = $conn->prepare("SELECT status, urgent, date_and_time_of_email, signature_requirement FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
+        $stmt = $conn->prepare("SELECT status, urgent, date_and_time_of_email, signature_requirement FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?");
         $stmt->execute([$ticketId]);
         $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -128,7 +128,7 @@
         }
         $params[] = $ticketId;
 
-        $sql = "UPDATE [LRNPH_OJT].[dbo].[acts_ticket] SET " . implode(', ', $setClauses) . " WHERE id = ?";
+        $sql = "UPDATE [LRNPH_QA].[dbo].[acts_ticket] SET " . implode(', ', $setClauses) . " WHERE id = ?";
         $stmt = $conn->prepare($sql);
         $stmt->execute($params);
 
@@ -136,7 +136,7 @@
         $remarkType = ($newStatus === 'pending') ? 'pending' : 'status_change';
 
         $stmtRemark = $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)
+            INSERT INTO [LRNPH_QA].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)
             VALUES (?, ?, ?, ?)
         ");
         $stmtRemark->execute([$ticketId, $remarkType, trim($remarks), $updatedBy]);
@@ -168,7 +168,7 @@
                 $relativePath = 'Uploads/remarks/' . $ticketId . '/' . $safeName;
 
                 $conn->prepare("
-                    INSERT INTO [LRNPH_OJT].[dbo].[acts_remarks_attachments] (remark_id, image_path)
+                    INSERT INTO [LRNPH_QA].[dbo].[acts_remarks_attachments] (remark_id, image_path)
                     VALUES (?, ?)
                 ")->execute([$remarkId, $relativePath]);
             }
@@ -176,20 +176,29 @@
 
         // ── Log: status ─────────────────────────────────────────────
         $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
             SELECT id, ?, 'status', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+            FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
 
         $conn->commit();
 
         http_response_code(200);
+
+        $message = match($newStatus) {
+            'in_progress' => 'Ticket marked as Ongoing',
+            'pending'     => 'Ticket marked as Pending',
+            'completed'   => 'Ticket marked as Done',
+            'enroute'     => 'Ticket marked as Enroute for Signature',
+            default       => 'Ticket marked as Waiting',
+        };
+
         echo json_encode([
-            'success'          => true,
-            'message'          => "Status updated to '$newStatus'",
-            'new_status'       => $newStatus,
-            'timely_response'  => $timelyResponse,
+            'success'         => true,
+            'message'         => $message,
+            'new_status'      => $newStatus,
+            'timely_response' => $timelyResponse,
         ]);
 
     } catch (Exception $e) {

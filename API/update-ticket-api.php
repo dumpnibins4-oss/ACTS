@@ -38,7 +38,7 @@
         }
 
         // ── Verify ticket exists and status is 'waiting' ────────────
-        $stmt = $conn->prepare("SELECT id, status FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?");
+        $stmt = $conn->prepare("SELECT id, status FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?");
         $stmt->execute([$ticketId]);
         $ticket = $stmt->fetch(PDO::FETCH_ASSOC);
 
@@ -76,7 +76,7 @@
 
         // 1. Update main ticket record
         $stmt = $conn->prepare("
-            UPDATE [LRNPH_OJT].[dbo].[acts_ticket]
+            UPDATE [LRNPH_QA].[dbo].[acts_ticket]
             SET customer = ?, email_title = ?, sales_in_charge = ?,
                 date_and_time_of_email = ?, deadline = ?,
                 urgent = ?, updated_at = ?, updated_by = ?
@@ -98,7 +98,7 @@
         }
 
         // Get existing section IDs
-        $stmtSec = $conn->prepare("SELECT id FROM [LRNPH_OJT].[dbo].[acts_ticket_section] WHERE ticket_id = ?");
+        $stmtSec = $conn->prepare("SELECT id FROM [LRNPH_QA].[dbo].[acts_ticket_section] WHERE ticket_id = ?");
         $stmtSec->execute([$ticketId]);
         $oldSections = $stmtSec->fetchAll(PDO::FETCH_COLUMN);
 
@@ -108,16 +108,16 @@
             // Delete only images that are NOT in the kept list
             if (count($allKeptImageIds) > 0) {
                 $keptPlaceholders = implode(',', array_fill(0, count($allKeptImageIds), '?'));
-                $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders) AND id NOT IN ($keptPlaceholders)")
+                $conn->prepare("DELETE FROM [LRNPH_QA].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders) AND id NOT IN ($keptPlaceholders)")
                      ->execute(array_merge($oldSections, $allKeptImageIds));
             } else {
                 // No images kept — delete all
-                $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders)")
+                $conn->prepare("DELETE FROM [LRNPH_QA].[dbo].[acts_ticket_section_images] WHERE ticket_section_id IN ($placeholders)")
                      ->execute($oldSections);
             }
 
             // Delete old sections
-            $conn->prepare("DELETE FROM [LRNPH_OJT].[dbo].[acts_ticket_section] WHERE ticket_id = ?")
+            $conn->prepare("DELETE FROM [LRNPH_QA].[dbo].[acts_ticket_section] WHERE ticket_id = ?")
                  ->execute([$ticketId]);
         }
 
@@ -128,7 +128,7 @@
             $keptIds  = $sec['kept_image_ids'] ?? [];
 
             $stmt = $conn->prepare("
-                INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section] (ticket_id, sub_title, body)
+                INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_section] (ticket_id, sub_title, body)
                 VALUES (?, ?, ?)
             ");
             $stmt->execute([$ticketId, $subTitle, $body]);
@@ -138,7 +138,7 @@
             // Re-associate kept images to the new section ID
             if (count($keptIds) > 0) {
                 $keptPlaceholders = implode(',', array_fill(0, count($keptIds), '?'));
-                $conn->prepare("UPDATE [LRNPH_OJT].[dbo].[acts_ticket_section_images] SET ticket_section_id = ? WHERE id IN ($keptPlaceholders)")
+                $conn->prepare("UPDATE [LRNPH_QA].[dbo].[acts_ticket_section_images] SET ticket_section_id = ? WHERE id IN ($keptPlaceholders)")
                      ->execute(array_merge([$sectionId], array_map('intval', $keptIds)));
             }
 
@@ -169,7 +169,7 @@
                     $relativePath = 'Uploads/tickets/' . $ticketId . '/' . $safeName;
 
                     $stmt = $conn->prepare("
-                        INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section_images] (ticket_section_id, image)
+                        INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_section_images] (ticket_section_id, image)
                         VALUES (?, ?)
                     ");
                     $stmt->execute([$sectionId, $relativePath]);
@@ -179,18 +179,18 @@
 
         // ── Log: edit ───────────────────────────────────────────────
         $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
             SELECT id, ?, 'edit', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+            FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
 
         // ── Log: section_update ─────────────────────────────────────
         $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
             SELECT id, ?, 'section_update', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+            FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$updatedBy, $ticketId]);
 
         $conn->commit();

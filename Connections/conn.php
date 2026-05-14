@@ -1,7 +1,7 @@
 <?php
 if (session_status() === PHP_SESSION_NONE) { session_start(); }
 // Database connection
-$dsn = "sqlsrv:Server=10.2.0.9;Database=LRNPH_OJT";
+$dsn = "sqlsrv:Server=10.2.0.9;Database=LRNPH_QA";
 $db_username = "sa";
 $db_password = "S3rverDB02lrn25";
 

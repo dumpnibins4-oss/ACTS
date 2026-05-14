@@ -26,7 +26,7 @@
             exit;
         }
         
-        $stmt = $conn->prepare("SELECT * FROM [LRNPH_OJT].[dbo].[lrnph_users] WHERE username = ?");
+        $stmt = $conn->prepare("SELECT * FROM [LRNPH].[dbo].[lrnph_users] WHERE username = ?");
         $stmt->execute([$username]);
         $user = $stmt->fetch();
         
@@ -42,21 +42,32 @@
             exit;
         }
 
-        $stmt = $conn->prepare("SELECT * FROM [LRNPH_E].[DBO].[lrn_master_list] WHERE BiometricsID = ?");
+        $stmt = $conn->prepare("SELECT * FROM [LRNPH_E].[DBO].[lrn_master_list] WHERE BiometricsID = ? AND IsActive = 1");
         $stmt->execute([$user['username']]);
         $master_list = $stmt->fetch();
 
-        $stmt = $conn->prepare("SELECT * FROM [LRNPH_OJT].[dbo].[acts_restrictions] WHERE biometrics_id = ?");
-        $stmt->execute([$user['username']]);
-        $role = $stmt->fetch();
-
-        if (!$role) {
+        if (!$master_list) {
             http_response_code(403);
-            echo json_encode(['success' => false, 'message' => "You don't have access to this system"]);
+            echo json_encode(['success' => false, 'message' => "Your account is inactive or doesn't exist"]);
             exit;
         }
 
-        $_SESSION['user_role']        = $role['role'];
+        if ($master_list['Department'] === 'Information Technology Department - LRN') {
+            $_SESSION['user_role'] = 'super_admin';
+        } else {
+            $stmt = $conn->prepare("SELECT * FROM [LRNPH_QA].[dbo].[acts_restrictions] WHERE biometrics_id = ?");
+            $stmt->execute([$user['username']]);
+            $role = $stmt->fetch();
+    
+            if (!$role) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'message' => "You don't have access to this system"]);
+                exit;
+            }
+    
+            $_SESSION['user_role'] = $role['role'];
+        }
+
         $_SESSION['user_information'] = $master_list;
 
         http_response_code(200);

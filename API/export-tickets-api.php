@@ -48,7 +48,7 @@
                 t.completed_at,
                 t.status,
                 t.created_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] t
+            FROM [LRNPH_QA].[dbo].[acts_ticket] t
             $whereSQL
             ORDER BY t.created_at DESC
         ";
@@ -61,7 +61,7 @@
         // (when status was changed to 'in_progress')
         $logStmt = $conn->prepare("
             SELECT TOP 1 changed_at
-            FROM [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            FROM [LRNPH_QA].[dbo].[acts_ticket_logs]
             WHERE ticket_id = ? AND action = 'status' AND status = 'in_progress'
             ORDER BY changed_at ASC
         ");
@@ -86,7 +86,7 @@
         // ── Remarks statement (Latest Status Remark) ────────────────
         $remarksStmt = $conn->prepare("
             SELECT TOP 1 r.remark_type, r.remark_body, r.created_at, m.FirstName, m.LastName
-            FROM [LRNPH_OJT].[dbo].[acts_remarks] r
+            FROM [LRNPH_QA].[dbo].[acts_remarks] r
             LEFT JOIN [LRNPH_E].[DBO].[lrn_master_list] m
                 ON TRY_CAST(r.created_by AS NVARCHAR(50)) = TRY_CAST(m.EmployeeID AS NVARCHAR(50)) COLLATE SQL_Latin1_General_CP1_CI_AS
             WHERE r.ticket_id = ? AND r.remark_type IN ('status_change', 'pending')

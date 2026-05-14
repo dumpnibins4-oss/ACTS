@@ -5,7 +5,7 @@
 <div class="flex flex-col items-start justify-start w-full h-full gap-6">
     <div class="flex flex-col items-start justify-start w-full h-auto gap-1">
         <h1 class="text-2xl font-bold text-zinc-800 tracking-wide">Create Ticket</h1>
-        <p class="text-sm text-zinc-400 font-medium">Submit and manage your work-related concerns</p>
+        <p class="text-xs text-zinc-400 font-medium">Submit and manage your work-related concerns</p>
     </div>
     <div class="flex flex-col items-center justify-start flex-1 w-full rounded-2xl p-1 overflow-y-auto">
         <form id="ticket-form" data-submitter="<?= $_SESSION['user_information']['FirstName'] . ' ' . substr($_SESSION['user_information']['MiddleName'], 0, 1) . '. ' . $_SESSION['user_information']['LastName'] ?>" data-created-by="<?= $_SESSION['user_information']['EmployeeID'] ?? '' ?>" class="flex flex-col w-full h-auto bg-white py-5 gap-5 rounded-xl border-2 border-zinc-300">
@@ -38,7 +38,7 @@
                         <img src="http://10.2.0.8/lrnph/emp_photos/<?= $empID ?>.jpg" alt="">
                     </div>
                     <div class="flex flex-col items-start gap-0.5">
-                        <p class="text-[10px] text-zinc-400 font-medium leading-none">Posted by</p>
+                        <p class="text-xs text-zinc-400 font-medium leading-none">Posted by</p>
                         <p class="text-xs font-semibold text-zinc-700 leading-none"><?php echo $_SESSION['user_information']['FirstName'] . ' ' . $_SESSION['user_information']['LastName']; ?></p>
                     </div>
                 </div>
@@ -49,7 +49,7 @@
                 <div class="flex flex-row items-start gap-1.5">
                     <i class="fa-regular fa-calendar text-zinc-400 text-xs"></i>
                     <div class="flex flex-col items-start gap-0.5">
-                        <p class="text-[10px] text-zinc-400 font-medium leading-none">Date Posted</p>
+                        <p class="text-xs text-zinc-400 font-medium leading-none">Date Posted</p>
                         <p class="text-xs font-semibold text-zinc-700 leading-none"><?php echo date('F j, Y'); ?></p>
                     </div>
                 </div>
@@ -60,7 +60,7 @@
                 <div class="flex flex-row items-start gap-1.5">
                     <i class="fa-solid fa-circle-dot text-zinc-400 text-xs"></i>
                     <div class="flex flex-col items-start gap-0.5">
-                        <p class="text-[10px] text-zinc-400 font-medium leading-none">Status</p>
+                        <p class="text-xs text-zinc-400 font-medium leading-none">Status</p>
                         <span class="text-xs font-semibold text-zinc-500 bg-zinc-200 px-3 py-1 rounded-full">Waiting</span>
                     </div>
                 </div>
@@ -68,7 +68,7 @@
 
                 <!-- Ticket ID -->
                 <div class="ml-auto flex items-center gap-1.5 bg-zinc-100 border border-zinc-200 rounded-lg px-3 py-1.5">
-                    <i class="fa-solid fa-hashtag text-zinc-400 text-[10px]"></i>
+                    <i class="fa-solid fa-hashtag text-zinc-400 text-xs"></i>
                     <span class="text-xs font-medium text-zinc-500 font-mono" id="ticket-id"></span>
                 </div>
             </div>
@@ -85,12 +85,12 @@
                 <!-- Row 1: Customer / Email Title -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Customer <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Customer <span class="text-red-500">*</span></label>
                         <input type="text" id="field-customer" name="customer" placeholder="Enter customer name"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Email Title <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Email Title <span class="text-red-500">*</span></label>
                         <input type="text" id="field-email-title" name="email_title" placeholder="Enter email subject"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                     </div>
@@ -99,10 +99,10 @@
                 <!-- Row 2: Sales In Charge / Classification -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1 relative">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Sales In Charge <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Sales In Charge <span class="text-red-500">*</span></label>
                         <input type="hidden" id="field-sales-in-charge" name="sales_in_charge" />
                         <div class="relative">
-                            <i class="fa-solid fa-magnifying-glass text-zinc-300 text-[10px] absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+                            <i class="fa-solid fa-magnifying-glass text-zinc-300 text-xs absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
                             <input type="text" id="sales-search-input" placeholder="Search sales employee…" autocomplete="off"
                                 class="w-full text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg pl-8 pr-8 py-2 outline-none focus:border-indigo-400 transition-all placeholder:text-zinc-300" />
                             <button type="button" id="sales-clear-btn" class="hidden absolute right-2 top-1/2 -translate-y-1/2 text-zinc-300 hover:text-zinc-500 transition-colors cursor-pointer">
@@ -114,7 +114,7 @@
                         </div>
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Classification <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Classification <span class="text-red-500">*</span></label>
                         <div class="relative flex items-center">
                             <select id="ticket-status" name="urgent"
                                 class="w-full text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg pl-3 pr-8 py-2 outline-none appearance-none cursor-pointer focus:border-indigo-400 transition-all">
@@ -129,12 +129,12 @@
                 <!-- Row 3: Date & Time of Email / Deadline -->
                 <div class="grid grid-cols-2 gap-4">
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Date & Time of Email <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Date & Time of Email <span class="text-red-500">*</span></label>
                         <input type="text" id="field-email-datetime" name="date_and_time_of_email" placeholder="Select date and time"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
                     <div class="flex flex-col gap-1">
-                        <label class="text-[10px] font-bold text-zinc-400 tracking-wide">Deadline <span class="text-red-500">*</span></label>
+                        <label class="text-xs font-bold text-zinc-400 tracking-wide">Deadline <span class="text-red-500">*</span></label>
                         <input type="text" id="field-deadline" name="deadline" placeholder="Select deadline"
                             class="text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg px-3 py-2 outline-none focus:border-indigo-400 transition-all" />
                     </div>
@@ -147,7 +147,7 @@
                     <p class="text-xs font-bold text-zinc-500 tracking-wide">EMAIL SECTIONS</p>
                     <hr class="h-0 flex-1 border-zinc-300" />
                     <button type="button" id="add-section-btn" class="flex flex-row items-center gap-1.5 text-xs font-medium text-indigo-600 border border-indigo-300 bg-indigo-50 hover:bg-indigo-100 rounded-md px-3 py-1.5 transition-all cursor-pointer whitespace-nowrap">
-                        <i class="fa-solid fa-plus text-[10px]"></i> Add Section
+                        <i class="fa-solid fa-plus text-xs"></i> Add Section
                     </button>
                 </div>
 

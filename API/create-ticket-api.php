@@ -66,7 +66,7 @@
 
         // 1. Insert into acts_ticket (title = ticket ID string)
         $stmt = $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket]
                 (title, status, urgent, submitter, created_by, customer, email_title, sales_in_charge, date_and_time_of_email, deadline)
             VALUES (?, 'waiting', ?, ?, ?, ?, ?, ?, ?, ?)
         ");
@@ -85,7 +85,7 @@
             $body     = $sec['body']      ?? '';
 
             $stmt = $conn->prepare("
-                INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section] (ticket_id, sub_title, body)
+                INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_section] (ticket_id, sub_title, body)
                 VALUES (?, ?, ?)
             ");
             $stmt->execute([$parentId, $subTitle, $body]);
@@ -122,7 +122,7 @@
                     $relativePath = 'Uploads/tickets/' . $parentId . '/' . $safeName;
 
                     $stmt = $conn->prepare("
-                        INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_section_images] (ticket_section_id, image)
+                        INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_section_images] (ticket_section_id, image)
                         VALUES (?, ?)
                     ");
                     $stmt->execute([$sectionId, $relativePath]);
@@ -132,10 +132,10 @@
 
         // ── Log: create ─────────────────────────────────────────────
         $conn->prepare("
-            INSERT INTO [LRNPH_OJT].[dbo].[acts_ticket_logs]
+            INSERT INTO [LRNPH_QA].[dbo].[acts_ticket_logs]
                 (ticket_id, changed_by, action, title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by)
             SELECT id, ?, 'create', title, status, urgent, submitter, customer, email_title, sales_in_charge, date_and_time_of_email, timely_response, deadline, completed_at, completed_by
-            FROM [LRNPH_OJT].[dbo].[acts_ticket] WHERE id = ?
+            FROM [LRNPH_QA].[dbo].[acts_ticket] WHERE id = ?
         ")->execute([$createdBy, $parentId]);
 
         $conn->commit();

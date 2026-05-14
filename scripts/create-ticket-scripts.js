@@ -50,7 +50,7 @@ function addSection() {
             </div>
             <button type="button" onclick="removeSection('${id}')"
                 class="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-red-400 hover:bg-red-50 rounded-md px-2 py-1 transition-all cursor-pointer">
-                <i class="fa-solid fa-trash-can text-[10px]"></i> Remove
+                <i class="fa-solid fa-trash-can text-xs"></i> Remove
             </button>
         </div>
 
@@ -58,7 +58,7 @@ function addSection() {
         <div class="flex flex-col gap-1 px-4 pt-4 pb-3">
             <div class="flex items-center justify-between">
                 <h2 class="text-xs font-bold text-zinc-400 tracking-wide">Email Body <span class="text-red-500">*</span></h2>
-                <span class="section-char-count text-[10px] font-medium text-zinc-300">0 / 1,500</span>
+                <span class="section-char-count text-xs font-medium text-zinc-300">0 / 1,500</span>
             </div>
             <textarea data-section-body rows="4" maxlength="1500"
                 placeholder="Paste or type the email body here…"
@@ -73,11 +73,11 @@ function addSection() {
                 <input type="file" id="fi-${id}" multiple accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                     class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" />
                 <div class="flex items-center justify-center w-8 h-8 bg-zinc-200 rounded-lg">
-                    <i class="fa-solid fa-cloud-arrow-up text-zinc-400 text-sm"></i>
+                    <i class="fa-solid fa-cloud-arrow-up text-zinc-400 text-xs"></i>
                 </div>
                 <div class="flex flex-col items-center gap-0.5">
                     <p class="text-xs font-semibold text-zinc-600">Drop files here or <span class="text-indigo-500">browse</span></p>
-                    <p class="text-[10px] text-zinc-300 font-medium mt-1">PDF, DOC, DOCX, JPG, PNG · Max 10MB · Up to 2 files</p>
+                    <p class="text-xs text-zinc-300 font-medium mt-1">PDF, DOC, DOCX, JPG, PNG · Max 10MB · Up to 2 files</p>
                 </div>
             </div>
 
@@ -103,7 +103,7 @@ function addSection() {
         bodyTA.addEventListener('input', () => {
             const len = bodyTA.value.length;
             charSpan.textContent = `${len.toLocaleString()} / 1,500`;
-            charSpan.className = `section-char-count text-[10px] font-medium ${len >= 1400 ? 'text-red-400' : 'text-zinc-300'}`;
+            charSpan.className = `section-char-count text-xs font-medium ${len >= 1400 ? 'text-red-400' : 'text-zinc-300'}`;
         });
     }
 
@@ -122,8 +122,14 @@ function addSection() {
 }
 
 function addFile(file, secId, sectionFiles, fl, dz) {
-    if (sectionFiles.length >= 2) { alert('Each section allows a maximum of 2 files.'); return; }
-    if (file.size > 10 * 1024 * 1024) { alert(`"${file.name}" exceeds the 10MB limit.`); return; }
+    if (sectionFiles.length >= 2) { 
+        toast.warning('File Limit Reached', { description: 'Each section allows a maximum of 2 files.' }); 
+        return; 
+    }
+    if (file.size > 10 * 1024 * 1024) { 
+        toast.error('File Too Large', { description: `"${file.name}" exceeds the 10MB limit.` }); 
+        return; 
+    }
 
     const fid  = 'f' + Date.now() + Math.random().toString(36).slice(2, 5);
     const size = file.size < 1024 * 1024
@@ -139,11 +145,11 @@ function addFile(file, secId, sectionFiles, fl, dz) {
     row.className = 'flex flex-row items-center justify-between w-full h-auto bg-indigo-50 border border-indigo-200 rounded-lg px-3 py-2 gap-3';
     row.innerHTML = `
         <div class="flex flex-row items-center gap-2 min-w-0">
-            <i class="fa-solid ${icon} text-indigo-400 text-sm flex-shrink-0"></i>
+            <i class="fa-solid ${icon} text-indigo-400 text-xs flex-shrink-0"></i>
             <p class="text-xs font-medium text-indigo-800 truncate">${file.name}</p>
         </div>
         <div class="flex flex-row items-center gap-3 flex-shrink-0">
-            <p class="text-[10px] text-indigo-400 font-medium">${size}</p>
+            <p class="text-xs text-indigo-400 font-medium">${size}</p>
             <button type="button" onclick="removeFile('${fid}', '${secId}')"
                 class="text-zinc-300 hover:text-red-400 transition-colors text-base leading-none font-light">&times;</button>
         </div>
@@ -154,7 +160,10 @@ function addFile(file, secId, sectionFiles, fl, dz) {
     row._sectionFiles = sectionFiles;
     row._dz = dz;
 
-    if (sectionFiles.length >= 2) dz.classList.add('hidden');
+    if (sectionFiles.length >= 2) {
+        dz.classList.add('hidden');
+        toast.info('Maximum Files Reached', { description: 'You have uploaded the maximum of 2 files for this section.' });
+    }
 }
 
 function removeFile(fid, secId) {
@@ -244,7 +253,7 @@ window.clearAll      = clearAll;
             if (!data.success || data.data.length === 0) {
                 dropdown.innerHTML = `
                     <div class="flex items-center justify-center py-4 px-3">
-                        <p class="text-[10px] text-zinc-400 font-medium">No employees found</p>
+                        <p class="text-xs text-zinc-400 font-medium">No employees found</p>
                     </div>`;
                 dropdown.classList.remove('hidden');
                 return;
@@ -265,7 +274,7 @@ window.clearAll      = clearAll;
                         </div>
                         <div class="flex flex-col min-w-0">
                             <p class="text-xs font-semibold text-zinc-700 truncate">${full}</p>
-                            <p class="text-[10px] text-zinc-400 font-medium">${idLabel}</p>
+                            <p class="text-xs text-zinc-400 font-medium">${idLabel}</p>
                         </div>
                     </div>
                 `;

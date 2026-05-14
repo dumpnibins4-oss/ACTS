@@ -77,20 +77,22 @@
                     </div>
 
                     <!-- Navigation -->
-                    <div id="nav-buttons" class="flex flex-row items-center gap-1 py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
-                        <?php foreach ($routes as $route) : ?>
-                            <button
-                                onclick="navigateTo('<?= $route['route'] ?>', '<?= $route['title'] ?>')"
-                                data-page="<?= $route['route'] ?>"
-                                class="nav-btn relative flex flex-row items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-all duration-200 cursor-pointer group"
-                            >
-                                <i class="<?= $route['icon'] ?> text-xs"></i>
-                                <span><?= $route['title'] ?></span>
-                                <!-- animated underline -->
-                                <span class="nav-underline absolute bottom-1 left-4 right-4 h-0.5 rounded-full bg-indigo-500 scale-x-0 transition-transform duration-250 origin-left"></span>
-                            </button>
-                        <?php endforeach; ?>
-                    </div>
+                    <?php if ($_SESSION['user_role'] === 'editor') : ?>
+                        <div id="nav-buttons" class="flex flex-row items-center gap-1 py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
+                            <?php foreach ($routes as $route) : ?>
+                                <button
+                                    onclick="navigateTo('<?= $route['route'] ?>', '<?= $route['title'] ?>')"
+                                    data-page="<?= $route['route'] ?>"
+                                    class="nav-btn relative flex flex-row items-center gap-2 px-4 py-2 rounded-xl text-xs font-medium text-zinc-500 hover:text-zinc-800 hover:bg-zinc-100 transition-all duration-200 cursor-pointer group"
+                                >
+                                    <i class="<?= $route['icon'] ?> text-xs"></i>
+                                    <span><?= $route['title'] ?></span>
+                                    <!-- animated underline -->
+                                    <span class="nav-underline absolute bottom-1 left-4 right-4 h-0.5 rounded-full bg-indigo-500 scale-x-0 transition-transform duration-250 origin-left"></span>
+                                </button>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php endif; ?>
 
                     <!-- Profile Avatar (trigger) -->
                     <div class="relative" id="profile-wrapper">
@@ -108,9 +110,9 @@
                             </div>
                             <div class="flex flex-col items-start leading-tight">
                                 <span class="text-xs font-semibold text-zinc-800"><?= $firstName ?></span>
-                                <span class="text-[10px] text-zinc-400 font-medium"><?= $roleLabel ?></span>
+                                <span class="text-xs text-zinc-400 font-medium"><?= $roleLabel ?></span>
                             </div>
-                            <i id="profile-chevron" class="fa-solid fa-chevron-down text-[10px] text-zinc-400 transition-transform duration-300 ml-0.5"></i>
+                            <i id="profile-chevron" class="fa-solid fa-chevron-down text-xs text-zinc-400 transition-transform duration-300 ml-0.5"></i>
                         </button>
 
                         <!-- Dropdown Panel -->
@@ -128,19 +130,19 @@
                                     onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
                                     class="w-12 h-12 object-cover object-top rounded-full border-2 border-indigo-200 flex-shrink-0"
                                 >
-                                <div style="display:none" class="w-12 h-12 rounded-full border-2 border-indigo-300 bg-indigo-500 flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                                <div style="display:none" class="w-12 h-12 rounded-full border-2 border-indigo-300 bg-indigo-500 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                                     <?= $initials ?>
                                 </div>
                                 <div class="flex flex-col min-w-0">
-                                    <p class="text-sm font-semibold text-zinc-800 truncate"><?= $fullName ?></p>
+                                    <p class="text-xs font-semibold text-zinc-800 truncate"><?= $fullName ?></p>
                                     <p class="text-xs text-zinc-400 font-medium truncate"><?= $dept ?></p>
                                     <div class="flex items-center gap-1 mt-0.5">
                                         <?php if ($role === 'super_admin') : ?>
-                                            <i class="fa-solid fa-crown text-yellow-500 text-[10px]"></i>
+                                            <i class="fa-solid fa-crown text-yellow-500 text-xs"></i>
                                         <?php elseif ($role === 'admin') : ?>
-                                            <i class="fa-solid fa-crown text-blue-500 text-[10px]"></i>
+                                            <i class="fa-solid fa-crown text-blue-500 text-xs"></i>
                                         <?php endif; ?>
-                                        <span class="text-[10px] font-medium text-indigo-500"><?= $roleLabel ?></span>
+                                        <span class="text-xs font-medium text-indigo-500"><?= $roleLabel ?></span>
                                     </div>
                                 </div>
                             </div>
@@ -150,14 +152,14 @@
                                 <div class="flex items-center gap-2 py-1.5">
                                     <i class="fa-solid fa-id-badge text-zinc-300 text-xs w-4 text-center"></i>
                                     <div>
-                                        <p class="text-[10px] text-zinc-400 font-medium leading-none">Employee ID</p>
+                                        <p class="text-xs text-zinc-400 font-medium leading-none">Employee ID</p>
                                         <p class="text-xs font-semibold text-zinc-700 font-mono"><?= $empID ?></p>
                                     </div>
                                 </div>
                                 <div class="flex items-center gap-2 py-1.5">
                                     <i class="fa-solid fa-building text-zinc-300 text-xs w-4 text-center"></i>
                                     <div>
-                                        <p class="text-[10px] text-zinc-400 font-medium leading-none">Department</p>
+                                        <p class="text-xs text-zinc-400 font-medium leading-none">Department</p>
                                         <p class="text-xs font-semibold text-zinc-700"><?= $dept ?></p>
                                     </div>
                                 </div>
@@ -185,7 +187,7 @@
             <!-- Footer -->
             <footer id="footer" class="flex flex-col w-full h-auto flex flex-col items-center justify-center gap-0 py-4">
                 <img src="./Assets/logo/logo.png" alt="" class="w-30 h-auto object-contain" draggable="false" />
-                <p class="text-xs text-zinc-400 font-medium font-mono">© <?php echo date('Y'); ?> | La Rose Noire, PH</p>
+                <p class="text-xs text-zinc-400 font-medium font-mono">© <?php echo date('Y'); ?> | La Rose Noire, Philippines</p>
             </footer>
         </div>
     </body>
