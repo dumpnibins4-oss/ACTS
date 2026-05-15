@@ -13,6 +13,8 @@ const myRole     = container?.dataset.role  || 'user';
 const IT_DEPT = 'Information Technology Department - LRN';
 
 const ROLE_LABELS = {
+    super_admin: 'Super Admin',
+    admin:       'Admin',
     editor:      'Editor',
     user:        'User'
 };
@@ -168,7 +170,7 @@ function buildActionButtons(user, isSelf) {
         }
     }
 
-    if (myRole === 'super_admin' && user.role === 'admin' && user.Department === IT_DEPT) {
+    if (myRole === 'super_admin' && user.role === 'admin') {
         html += `<button onclick="transferSuperAdmin(${user.id}, '${(user.FirstName || '')} ${(user.LastName || '')}')"
                     class="text-zinc-400 hover:text-amber-500 transition-colors cursor-pointer" title="Transfer Super Admin">
                     <i class="fa-solid fa-crown text-xs"></i>
@@ -245,6 +247,7 @@ function openAddUserModal() {
     roleSelect.innerHTML = '<option value="">Select a role…</option>';
 
     if (myRole === 'super_admin') {
+        roleSelect.innerHTML += '<option value="admin">Admin</option>';
         roleSelect.innerHTML += '<option value="editor">Editor</option>';
         roleSelect.innerHTML += '<option value="user">User</option>';
     }
@@ -352,15 +355,6 @@ function selectEmployee(emp) {
             hint.textContent = 'Non-IT Department — Editor or User role only.';
             hint.classList.add('text-amber-400');
         }
-    } else if (myRole === 'admin') {
-        // Admin cannot change roles for IT dept employees at all
-        if (emp.Department === IT_DEPT) {
-            toast.warning('Restricted', { description: 'Only Super Admin can manage IT Department users.' });
-            clearSelectedEmployee();
-            return;
-        }
-        roleOptions.editor = 'Editor';
-        roleOptions.user   = 'User';
     }
 }
 
@@ -432,6 +426,7 @@ async function changeUserRole(userId, currentRole, department, userName, empId, 
     const roleOptions = {};
 
     if (myRole === 'super_admin') {
+        roleOptions.admin = 'Admin';
         roleOptions.editor = 'Editor';
         roleOptions.user   = 'User';
     }
@@ -534,7 +529,7 @@ async function transferSuperAdmin(userId, userName) {
 
         if (data.success) {
             toast.success('Transferred', { description: data.message });
-            window.location.reload();
+            setTimeout(() => window.location.reload(), 1500);
         } else {
             toast.error('Error', { description: data.message });
         }

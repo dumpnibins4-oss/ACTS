@@ -71,12 +71,6 @@
                 exit;
             }
 
-            // Admin/Super Admin must be from IT Department
-            if (in_array($role, ['admin']) && $emp['Department'] !== 'Information Technology Department - LRN') {
-                echo json_encode(['success' => false, 'message' => 'Admin role can only be assigned to IT Department employees.']);
-                exit;
-            }
-
             // Admin can only create user/editor
             if ($callerRole === 'admin' && !in_array($role, ['user', 'editor'])) {
                 echo json_encode(['success' => false, 'message' => 'You can only assign User or Editor roles.']);
@@ -133,12 +127,6 @@
             // Only super_admin can set admin role
             if ($newRole === 'admin' && $callerRole !== 'super_admin') {
                 echo json_encode(['success' => false, 'message' => 'Only Super Admin can assign Admin role.']);
-                exit;
-            }
-
-            // Admin must be IT dept
-            if ($newRole === 'admin' && $target['Department'] !== 'Information Technology Department - LRN') {
-                echo json_encode(['success' => false, 'message' => 'Admin role requires IT Department.']);
                 exit;
             }
 
@@ -235,11 +223,6 @@
 
             if ($target['role'] !== 'admin') {
                 echo json_encode(['success' => false, 'message' => 'Can only transfer Super Admin to an existing Admin.']);
-                exit;
-            }
-
-            if ($target['Department'] !== 'Information Technology Department - LRN') {
-                echo json_encode(['success' => false, 'message' => 'Target must be in the IT Department.']);
                 exit;
             }
 

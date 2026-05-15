@@ -118,8 +118,8 @@
                         <div class="relative flex items-center">
                             <select id="ticket-status" name="urgent"
                                 class="w-full text-xs font-medium text-zinc-600 bg-transparent border border-zinc-200 rounded-lg pl-3 pr-8 py-2 outline-none appearance-none cursor-pointer focus:border-indigo-400 transition-all">
-                                <option value=0>Non-Urgent</option>
-                                <option value=1>Urgent</option>
+                                <option value=0>Non-Urgent (Acknowledge within 48 hours)</option>
+                                <option value=1>Urgent (Acknowledge within 24 hours)</option>
                             </select>
                             <i class="fa-solid fa-chevron-down text-[9px] text-zinc-400 absolute right-3 pointer-events-none"></i>
                         </div>

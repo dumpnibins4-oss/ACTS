@@ -89,6 +89,14 @@
             </select>
             <i class="fa-solid fa-chevron-down text-[9px] text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
         </div>
+        <!-- Creator Filter -->
+        <div class="relative">
+            <select id="history-filter-creator" onchange="applyHistoryFilters()"
+                class="text-xs font-medium text-zinc-600 bg-white border border-zinc-200 rounded-lg pl-3 pr-8 py-2 outline-none appearance-none cursor-pointer focus:border-indigo-400 transition-all max-w-[150px]">
+                <option value="all">All Creators</option>
+            </select>
+            <i class="fa-solid fa-chevron-down text-[9px] text-zinc-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none"></i>
+        </div>
         <!-- Date Range -->
         <div class="flex items-center gap-1.5">
             <span class="text-xs font-medium text-zinc-400">From</span>
@@ -209,35 +217,36 @@
 </div>
 
 <!-- History Detail Modal -->
-<div id="history-modal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm">
-    <div class="relative flex flex-col w-[600px] max-h-[80vh] bg-white rounded-2xl border border-zinc-200 shadow-2xl overflow-hidden" style="animation: fadeSlideIn .2s ease both;">
+<div id="history-modal" class="fixed inset-0 z-[999] hidden items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+    <div class="relative flex flex-col w-full max-w-[800px] max-h-[90vh] bg-white rounded-2xl border border-zinc-200 shadow-2xl overflow-hidden" style="animation: fadeSlideIn .2s ease both;">
         <!-- Modal Header -->
-        <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-200 bg-zinc-50">
-            <div class="flex items-center gap-3">
-                <div class="flex items-center justify-center w-8 h-8 bg-indigo-50 border border-indigo-200 rounded-lg">
-                    <i class="fa-solid fa-ticket text-indigo-500 text-xs"></i>
+        <div class="flex items-center justify-between px-6 py-4 border-b border-zinc-100 bg-white z-10 shrink-0">
+            <div class="flex items-center gap-4">
+                <div class="flex items-center justify-center w-10 h-10 bg-indigo-50/50 border border-indigo-100 rounded-xl">
+                    <i class="fa-solid fa-ticket text-indigo-500 text-sm"></i>
                 </div>
                 <div>
-                    <p class="text-xs font-semibold text-zinc-800" id="hist-modal-title"></p>
-                    <p class="text-xs text-zinc-400 font-medium" id="hist-modal-date"></p>
+                    <p class="text-[15px] font-bold text-zinc-800" id="hist-modal-title"></p>
+                    <p class="text-[11px] text-zinc-400 font-medium tracking-wide uppercase mt-0.5" id="hist-modal-date"></p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
-                <span id="hist-modal-status" class="text-xs font-semibold px-2.5 py-1 rounded-full"></span>
-                <button id="hist-modal-logs-btn" class="flex items-center justify-center text-xs font-medium text-zinc-500 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 transition-all cursor-pointer">
-                    <i class="fa-solid fa-clock-rotate-left text-xs mr-1"></i> Logs
+                <span id="hist-modal-status" class="text-xs font-bold px-3 py-1.5 rounded-full mr-2"></span>
+                <button id="hist-modal-logs-btn" class="flex items-center justify-center text-xs font-semibold text-zinc-600 bg-white border border-zinc-200 rounded-lg px-3 py-2 hover:bg-zinc-50 hover:text-indigo-600 transition-all cursor-pointer shadow-sm">
+                    <i class="fa-solid fa-clock-rotate-left text-xs mr-1.5"></i> Logs
                 </button>
-                <button onclick="closeHistoryModal()" class="text-zinc-400 hover:text-zinc-600 transition-colors cursor-pointer">
-                    <i class="fa-solid fa-xmark text-base"></i>
+                <div class="w-px h-6 bg-zinc-200 mx-1"></div>
+                <button onclick="closeHistoryModal()" class="flex items-center justify-center w-8 h-8 text-zinc-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all cursor-pointer">
+                    <i class="fa-solid fa-xmark text-lg"></i>
                 </button>
             </div>
         </div>
         <!-- Modal Body -->
-        <div class="flex flex-col gap-4 px-6 py-5 overflow-y-auto" id="hist-modal-body"></div>
+        <div class="flex flex-col gap-6 px-8 py-6 overflow-y-auto bg-zinc-50/30 flex-1 relative" id="hist-modal-body"></div>
         <!-- Modal Footer -->
-        <div class="flex flex-col items-end justify-start px-6 py-3 border-t border-zinc-200 bg-zinc-50 gap-2" id="hist-modal-footer">
-            <div id="hist-modal-action"></div>
+        <div class="flex items-center justify-between px-6 py-4 border-t border-zinc-100 bg-white/95 backdrop-blur-md z-10 shrink-0" id="hist-modal-footer">
             <div class="flex flex-col" id="hist-modal-footer-info"></div>
+            <div id="hist-modal-action" class="flex gap-2"></div>
         </div>
     </div>
 </div>

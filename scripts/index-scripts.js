@@ -108,10 +108,10 @@ const mainContent = document.getElementById('main-content')
 const myRole      = mainContent.dataset.role
 
 const defaultPages = {
-    super_admin: { page: 'user-management', title: 'User Management' },
-    admin:       { page: 'user-management', title: 'User Management' },
-    editor:      { page: 'create-ticket',   title: 'Create Ticket'   },
-    user:        { page: 'ticket-history',  title: 'Ticket History'  },
+    super_admin: { page: 'create-ticket', title: 'Create Ticket' },
+    admin:       { page: 'create-ticket', title: 'Create Ticket' },
+    editor:      { page: 'create-ticket', title: 'Create Ticket' },
+    user:        { page: 'ticket-history', title: 'Ticket History' },
 }
 
 const defaults   = defaultPages[myRole] || defaultPages['user']

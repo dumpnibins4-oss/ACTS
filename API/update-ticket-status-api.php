@@ -133,7 +133,7 @@
         $stmt->execute($params);
 
         // ── Save remark to acts_remarks ───────────────────────────
-        $remarkType = ($newStatus === 'pending') ? 'pending' : 'status_change';
+        $remarkType = ($newStatus === 'pending') ? 'pending' : "status_change:$newStatus";
 
         $stmtRemark = $conn->prepare("
             INSERT INTO [LRNPH_QA].[dbo].[acts_remarks] (ticket_id, remark_type, remark_body, created_by)

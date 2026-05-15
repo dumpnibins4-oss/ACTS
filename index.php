@@ -17,11 +17,14 @@
     $roleLabel  = $role === 'super_admin' ? 'Super Admin' : ucfirst($role);
 
     $routes = 
-        $_SESSION['user_role'] === 'super_admin' || $_SESSION['user_role'] === 'admin' ? [
-            ['title' => 'User Management', 'route' => 'user-management', 'icon' => 'fa-solid fa-users'],
-        ] : ($_SESSION['user_role'] === 'editor' ? [
+        $_SESSION['user_role'] === 'super_admin' ? [
             ['title' => 'Create Ticket', 'route' => 'create-ticket', 'icon' => 'fa-solid fa-file-lines'],
-            ['title' => 'My Tickets',    'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
+            ['title' => 'Tickets',       'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
+            ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
+            ['title' => 'User Management', 'route' => 'user-management', 'icon' => 'fa-solid fa-users'],
+        ] : ($_SESSION['user_role'] === 'editor' || $_SESSION['user_role'] === 'admin' ? [
+            ['title' => 'Create Ticket', 'route' => 'create-ticket', 'icon' => 'fa-solid fa-file-lines'],
+            ['title' => 'Tickets',       'route' => 'my-tickets',    'icon' => 'fa-solid fa-ticket'],
             ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
         ] : [
             ['title' => 'Ticket History','route' => 'ticket-history','icon' => 'fa-solid fa-clock-rotate-left'],
@@ -45,7 +48,7 @@
             import { createRoot }      from 'https://esm.sh/react-dom@18.3.1/client';
             const el = document.createElement('div'); el.id = 'sonner-root';
             document.body.appendChild(el);
-            createRoot(el).render(createElement(Toaster, { richColors: true, position: 'top-right', theme: 'light', closeButton: true, toastOptions: { style: { fontFamily: 'Geist, sans-serif' } } }));
+            createRoot(el).render(createElement(Toaster, { position: 'top-right', theme: 'light', closeButton: true, toastOptions: { style: { fontFamily: 'Geist, ui-sans-serif, system-ui, sans-serif', border: '1px solid #e4e4e7', boxShadow: '0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1)', borderRadius: '8px', color: '#09090b' }, classNames: { title: 'font-semibold', description: 'text-zinc-500' } } }));
             window.toast = toast;
         </script>
         <!-- ACTS Dialog -->
@@ -77,7 +80,7 @@
                     </div>
 
                     <!-- Navigation -->
-                    <?php if ($_SESSION['user_role'] === 'editor') : ?>
+                    <?php if ($_SESSION['user_role'] !== 'user') : ?>
                         <div id="nav-buttons" class="flex flex-row items-center gap-1 py-2 px-5 bg-white rounded-3xl border-zinc-200 shadow-sm shadow-zinc-200">
                             <?php foreach ($routes as $route) : ?>
                                 <button
@@ -187,7 +190,7 @@
             <!-- Footer -->
             <footer id="footer" class="flex flex-col w-full h-auto flex flex-col items-center justify-center gap-0 py-4">
                 <img src="./Assets/logo/logo.png" alt="" class="w-30 h-auto object-contain" draggable="false" />
-                <p class="text-xs text-zinc-400 font-medium font-mono">© <?php echo date('Y'); ?> | La Rose Noire, Philippines</p>
+                <p class="text-xs text-zinc-400 font-medium font-mono">© <?php echo date('Y'); ?> | La Rose Noire, Philippines Inc.</p>
             </footer>
         </div>
     </body>

@@ -24,7 +24,7 @@
             import { createRoot }      from 'https://esm.sh/react-dom@18.3.1/client';
             const el = document.createElement('div'); el.id = 'sonner-root';
             document.body.appendChild(el);
-            createRoot(el).render(createElement(Toaster, { richColors: true, position: 'top-right', theme: 'light', closeButton: true, toastOptions: { style: { fontFamily: 'Geist, sans-serif' } } }));
+            createRoot(el).render(createElement(Toaster, { position: 'top-right', theme: 'light', closeButton: true, toastOptions: { style: { fontFamily: 'Geist, ui-sans-serif, system-ui, sans-serif', border: '1px solid #e4e4e7', boxShadow: '0 10px 15px -3px rgba(0,0,0,.1), 0 4px 6px -4px rgba(0,0,0,.1)', borderRadius: '8px', color: '#09090b' }, classNames: { title: 'font-semibold', description: 'text-zinc-500' } } }));
             window.toast = toast;
         </script>
         <!-- ACTS Dialog -->
@@ -128,37 +128,37 @@
                                 </div>
                                 <div>
                                     <p class="text-[11px] font-medium text-zinc-900 mb-0.5">Track</p>
-                                    <p class="text-xs text-zinc-900">Ticket #4821 · Open</p>
+                                    <p class="text-[10px] text-zinc-900">Ticket #4821 · Open</p>
                                 </div>
                             </div>
                             <div class="flex flex-col gap-1.5">
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-zinc-900 w-16 shrink-0">Acknowledge</span>
+                                    <span class="text-[10px] text-zinc-900 w-16 shrink-0">Acknowledge</span>
                                     <div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                                         <div class="h-full w-full bg-teal-400 rounded-full"></div>
                                     </div>
-                                    <span class="text-xs text-teal-400 w-4 text-right">✓</span>
+                                    <span class="text-[10px] text-teal-400 w-4 text-right">✓</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-zinc-900 w-16 shrink-0">Classify</span>
+                                    <span class="text-[10px] text-zinc-900 w-16 shrink-0">Classify</span>
                                     <div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                                         <div class="h-full w-full bg-teal-400 rounded-full"></div>
                                     </div>
-                                    <span class="text-xs text-teal-400 w-4 text-right">✓</span>
+                                    <span class="text-[10px] text-teal-400 w-4 text-right">✓</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-zinc-900 w-16 shrink-0">Track</span>
+                                    <span class="text-[10px] text-zinc-900 w-16 shrink-0">Track</span>
                                     <div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                                         <div class="h-full w-[60%] bg-violet-400 rounded-full"></div>
                                     </div>
-                                    <span class="text-xs text-violet-400 w-4 text-right">60%</span>
+                                    <span class="text-[10px] text-violet-400 w-4 text-right">60%</span>
                                 </div>
                                 <div class="flex items-center gap-2">
-                                    <span class="text-xs text-zinc-900 w-16 shrink-0">Solve</span>
+                                    <span class="text-[10px] text-zinc-900 w-16 shrink-0">Solve</span>
                                     <div class="flex-1 h-1 bg-white/5 rounded-full overflow-hidden">
                                         <div class="h-full w-[8%] bg-zinc-500 rounded-full"></div>
                                     </div>
-                                    <span class="text-xs text-zinc-600 w-4 text-right">—</span>
+                                    <span class="text-[10px] text-zinc-600 w-4 text-right">—</span>
                                 </div>
                             </div>
                         </div>

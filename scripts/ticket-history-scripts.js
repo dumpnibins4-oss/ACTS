@@ -105,7 +105,24 @@
             }
 
             allHistoryTickets = data.data
+
+            // Populate creator filter
+            const creatorSelect = document.getElementById('history-filter-creator');
+            if (creatorSelect) {
+                const currentVal = creatorSelect.value;
+                creatorSelect.innerHTML = '<option value="all">All Creators</option>';
+                const creators = [...new Set(allHistoryTickets.map(t => t.FirstName && t.LastName ? `${t.FirstName} ${t.LastName}`.trim() : t.submitter || t.created_by))].filter(Boolean).sort();
+                creators.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c;
+                    opt.textContent = c;
+                    creatorSelect.appendChild(opt);
+                });
+                if (Array.from(creatorSelect.options).some(o => o.value === currentVal)) creatorSelect.value = currentVal;
+            }
+
             histCurrentPage = 1
+            histFilteredCache = allHistoryTickets
             applyAllFilters()
             updateHistStats(allHistoryTickets)
 
@@ -122,6 +139,7 @@
         const search   = (document.getElementById('history-search')?.value || '').toLowerCase()
         const status   = document.getElementById('history-filter-status')?.value || 'all'
         const urgency  = document.getElementById('history-filter-urgency')?.value || 'all'
+        const creator  = document.getElementById('history-filter-creator')?.value || 'all'
         const dateFrom = document.getElementById('history-date-from')?.value || ''
         const dateTo   = document.getElementById('history-date-to')?.value || ''
 
@@ -133,6 +151,13 @@
 
         if (urgency !== 'all') {
             filtered = filtered.filter(t => String(t.urgent) === urgency)
+        }
+
+        if (creator !== 'all') {
+            filtered = filtered.filter(t => {
+                const name = t.FirstName && t.LastName ? `${t.FirstName} ${t.LastName}`.trim() : t.submitter || t.created_by;
+                return name === creator;
+            })
         }
 
         if (dateFrom) {
@@ -336,131 +361,65 @@
         const fmtDate = (d) => d ? new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
 
         bodyEl.innerHTML += `
-            <div class="grid grid-cols-2 gap-3">
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">SUBMITTER</p>
-                    <p class="text-xs font-semibold text-zinc-700">${ticket.submitter || '—'}</p>
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">CUSTOMER</p>
-                    <p class="text-xs font-semibold text-zinc-700">${ticket.customer || '—'}</p>
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">TICKET TITLE</p>
-                    <p class="text-xs font-semibold text-zinc-700">${ticket.email_title || '—'}</p>
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">SALES IN CHARGE</p>
-                    <p class="text-xs font-semibold text-zinc-700">${ticket.sales_in_charge || '—'}</p>
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">EMAIL DATE & TIME</p>
-                    <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.date_and_time_of_email)}</p>
-                    ${ticket.status === 'waiting' && ticket.date_and_time_of_email ? `
-                        <span class="hist-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-indigo-50 text-indigo-500"
-                            data-deadline="${getDeadlineMs(ticket)}">
-                            Acknowledge before: ⏱ ${formatCountdown(getDeadlineMs(ticket) - Date.now()).text}
-                        </span>` : ''}
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">DEADLINE</p>
-                    <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.deadline)}</p>
-                    ${ticket.status === 'waiting' && ticket.deadline ? `
-                        <span class="hist-deadline-countdown text-xs font-semibold px-1.5 py-0.5 rounded mt-1 w-fit bg-violet-50 text-violet-500"
-                            data-deadline="${getStoredDeadlineMs(ticket)}">
-                            Deadline in: ⏱ ${formatCountdown(getStoredDeadlineMs(ticket) - Date.now()).text}
-                        </span>` : ''}
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">CLASSIFICATION</p>
-                    ${ticket.urgent == 1
-                        ? '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-bolt text-[8px]"></i> Urgent</span>'
-                        : '<span class="text-xs font-semibold text-zinc-600">Non-Urgent</span>'
-                    }
-                </div>
-                <div class="flex flex-col gap-0.5 bg-zinc-50 border border-zinc-200 rounded-lg px-3 py-2">
-                    <p class="text-xs text-zinc-400 font-bold tracking-wide">TIMELY RESPONSE</p>
-                    ${ticket.timely_response == null
-                        ? '<span class="text-xs font-medium text-zinc-400">—</span>'
-                        : ticket.timely_response == 1
-                            ? '<span class="text-xs font-semibold text-green-600"><i class="fa-solid fa-circle-check text-xs"></i> Yes</span>'
-                            : '<span class="text-xs font-semibold text-red-500"><i class="fa-solid fa-circle-xmark text-xs"></i> No</span>'
-                    }
+            <div class="flex flex-col gap-6 w-full">
+                <!-- Metadata Grid -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 bg-white border border-zinc-200 rounded-xl p-5 shadow-sm">
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Submitter</p>
+                        <p class="text-xs font-semibold text-zinc-700 truncate">${ticket.submitter || '—'}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Customer</p>
+                        <p class="text-xs font-semibold text-zinc-700 truncate">${ticket.customer || '—'}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Sales In Charge</p>
+                        <p class="text-xs font-semibold text-zinc-700 truncate">${ticket.sales_in_charge || '—'}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Classification</p>
+                        ${ticket.urgent == 1
+                            ? '<span class="text-xs font-semibold text-red-500 w-fit px-2.5 py-0.5 bg-red-50 rounded-full border border-red-100"><i class="fa-solid fa-bolt text-[10px] mr-1"></i> Urgent</span>'
+                            : '<span class="text-xs font-semibold text-zinc-600 w-fit px-2.5 py-0.5 bg-zinc-100 rounded-full border border-zinc-200">Non-Urgent</span>'
+                        }
+                    </div>
+                    <div class="flex flex-col gap-1 lg:col-span-2">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Ticket Title</p>
+                        <p class="text-xs font-semibold text-zinc-700 truncate">${ticket.email_title || '—'}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Email Received</p>
+                        <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.date_and_time_of_email)}</p>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Deadline</p>
+                        <div class="flex items-center gap-2">
+                            <p class="text-xs font-semibold text-zinc-700">${fmtDate(ticket.deadline)}</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1 col-span-2 lg:col-span-4 mt-2 pt-3 border-t border-zinc-100">
+                        <p class="text-[10px] text-zinc-400 font-bold tracking-widest uppercase">Timely Response</p>
+                        <div class="flex items-center gap-3 mt-1">
+                            ${ticket.timely_response == null
+                                ? '<span class="text-[11px] font-medium text-zinc-400 w-fit px-2.5 py-0.5 bg-zinc-100 rounded-full border border-zinc-200">—</span>'
+                                : ticket.timely_response == 1
+                                    ? '<span class="text-[11px] font-semibold text-green-600 w-fit px-2.5 py-0.5 bg-green-50 rounded-full border border-green-100"><i class="fa-solid fa-circle-check text-[10px] mr-1"></i> Met</span>'
+                                    : '<span class="text-[11px] font-semibold text-red-500 w-fit px-2.5 py-0.5 bg-red-50 rounded-full border border-red-100"><i class="fa-solid fa-circle-xmark text-[10px] mr-1"></i> Missed</span>'
+                            }
+                            <!-- Active Timers -->
+                            ${ticket.status === 'waiting' && ticket.date_and_time_of_email ? `
+                                <span class="hist-countdown text-[10px] font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-500 border border-indigo-100" data-deadline="${getDeadlineMs(ticket)}">
+                                    Ack: ⏱ ${formatCountdown(getDeadlineMs(ticket) - Date.now()).text}
+                                </span>` : ''}
+                            ${ticket.status !== 'enroute' && ticket.status !== 'completed' && ticket.deadline ? `
+                                <span class="hist-deadline-countdown text-[10px] font-semibold px-2 py-0.5 rounded-full bg-violet-50 text-violet-500 border border-violet-100" data-deadline="${getStoredDeadlineMs(ticket)}">
+                                    Due: ⏱ ${formatCountdown(getStoredDeadlineMs(ticket) - Date.now()).text}
+                                </span>` : ''}
+                        </div>
+                    </div>
                 </div>
             </div>
         `
-
-        // Reschedule deadline button
-        const canReschedule = ['waiting', 'pending', 'in_progress'].includes(ticket.status) && ticket.deadline && userPosTitle === 'Quality Assurance Manager'
-        if (canReschedule) {
-            bodyEl.innerHTML += `
-                <div class="flex items-center justify-start">
-                    <button id="hist-reschedule-btn" class="flex items-center gap-1.5 text-[11px] font-medium text-amber-600 bg-amber-50 border border-amber-200 rounded-lg px-3 py-1.5 hover:bg-amber-100 transition-all cursor-pointer">
-                        <i class="fa-solid fa-calendar-day text-xs"></i> Reschedule Deadline
-                    </button>
-                </div>
-            `
-        }
-
-        // Remarks Timeline
-        if (ticket.remarks && ticket.remarks.length > 0) {
-            bodyEl.innerHTML += `<hr class="border-zinc-200" />`
-
-            const REMARK_TYPE_META = {
-                status_change:  { icon: 'fa-arrow-right', bg: 'bg-blue-50',   border: 'border-blue-200',   iconColor: 'text-blue-500',   label: 'Status Change' },
-                pending:        { icon: 'fa-pause',       bg: 'bg-orange-50', border: 'border-orange-200', iconColor: 'text-orange-500', label: 'Pending' },
-                reschedule:     { icon: 'fa-calendar-day',bg: 'bg-amber-50',  border: 'border-amber-200',  iconColor: 'text-amber-500',  label: 'Reschedule' },
-                section_update: { icon: 'fa-pen',         bg: 'bg-violet-50', border: 'border-violet-200', iconColor: 'text-violet-500', label: 'Section Update' },
-            }
-            const imgExts = ['jpg','jpeg','png','gif','webp','bmp','svg']
-
-            let remarksHTML = '<div class="flex flex-col gap-0"><p class="text-xs font-bold text-zinc-500 tracking-wide mb-2">REMARKS HISTORY</p>'
-            ticket.remarks.forEach((rm, idx) => {
-                const meta = REMARK_TYPE_META[rm.remark_type] || REMARK_TYPE_META.status_change
-                const isLast = idx === ticket.remarks.length - 1
-                const rmDate = rm.created_at ? new Date(rm.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'
-
-                let attHTML = ''
-                if (rm.attachments && rm.attachments.length > 0) {
-                    const imgs = rm.attachments.filter(a => imgExts.includes(a.image_path.split('.').pop().toLowerCase()))
-                    const others = rm.attachments.filter(a => !imgExts.includes(a.image_path.split('.').pop().toLowerCase()))
-                    attHTML = '<div class="flex flex-wrap gap-1.5 mt-1.5">'
-                    imgs.forEach(a => {
-                        attHTML += `<div class="img-lightbox-trigger group relative rounded-lg overflow-hidden border border-zinc-200 hover:border-indigo-300 transition-all w-16 h-16 flex-shrink-0 cursor-pointer" data-src="./${a.image_path}">
-                            <img src="./${a.image_path}" alt="" class="w-full h-full object-cover" />
-                            <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center"><i class="fa-solid fa-expand text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"></i></div>
-                        </div>`
-                    })
-                    others.forEach(a => {
-                        attHTML += `<a href="./${a.image_path}" target="_blank" class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1 hover:bg-indigo-100 transition-all">
-                            <i class="fa-solid fa-paperclip text-indigo-400 text-[8px]"></i>
-                            <span class="text-xs font-medium text-indigo-600 truncate max-w-24">${a.image_path.split('/').pop()}</span>
-                        </a>`
-                    })
-                    attHTML += '</div>'
-                }
-
-                remarksHTML += `
-                    <div class="flex gap-3 relative">
-                        ${!isLast ? '<div class="absolute left-[11px] top-6 bottom-0 w-px bg-zinc-200"></div>' : ''}
-                        <div class="flex items-center justify-center w-6 h-6 ${meta.bg} ${meta.border} border rounded-full flex-shrink-0 z-10">
-                            <i class="fa-solid ${meta.icon} ${meta.iconColor} text-[8px]"></i>
-                        </div>
-                        <div class="flex flex-col gap-0.5 pb-3 min-w-0 flex-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs font-semibold ${meta.iconColor}">${meta.label}</span>
-                                <span class="text-xs text-zinc-300">·</span>
-                                <span class="text-xs text-zinc-400 font-medium">${rmDate}</span>
-                            </div>
-                            <p class="text-[11px] text-zinc-600 font-medium whitespace-pre-wrap">${rm.remark_body || ''}</p>
-                            ${attHTML}
-                            <p class="text-xs text-zinc-400 font-medium mt-0.5">${rm.created_by_name || '—'}</p>
-                        </div>
-                    </div>`
-            })
-            remarksHTML += '</div>'
-            bodyEl.innerHTML += remarksHTML
-        }
 
         // ── Sections ──
         if (ticket.sections && ticket.sections.length > 0) {
@@ -508,24 +467,26 @@
                 }
 
                 bodyEl.innerHTML += `
-                    <div class="flex flex-col gap-2 p-4 bg-zinc-50 border border-zinc-200 rounded-xl">
+                    <div class="flex flex-col gap-3 p-5 bg-white border-l-4 border-l-indigo-400 border-y border-r border-zinc-200 rounded-r-xl shadow-sm relative overflow-hidden">
+                        <div class="absolute -left-[2px] top-4 bottom-4 w-px bg-indigo-200 opacity-50"></div>
                         <div class="flex items-center gap-2">
-                            <div class="flex items-center justify-center w-5 h-5 bg-indigo-500/10 border border-indigo-300 rounded-md">
-                                <i class="fa-regular fa-envelope text-indigo-500 text-xs"></i>
+                            <div class="flex items-center justify-center w-6 h-6 bg-indigo-50 rounded-md">
+                                <i class="fa-solid fa-file-lines text-indigo-500 text-[10px]"></i>
                             </div>
-                            <p class="text-xs font-semibold text-zinc-600">${sec.sub_title || 'Section ' + (idx + 1)}</p>
+                            <p class="text-sm font-bold text-zinc-700">${sec.sub_title || 'Section ' + (idx + 1)}</p>
                         </div>
-                        <p class="text-xs text-zinc-600 font-medium whitespace-pre-wrap leading-relaxed break-all">${sec.body || ''}</p>
-                        ${imagesHTML}
+                        <div class="pl-8 overflow-y-auto">
+                            <p class="text-[13px] text-zinc-600 font-medium whitespace-pre-wrap leading-relaxed break-words">${sec.body || ''}</p>
+                            ${imagesHTML}
+                        </div>
                     </div>
                 `
             })
         }
 
-        // Wire reschedule button
-        if (canReschedule) {
-            document.getElementById('hist-reschedule-btn')?.addEventListener('click', () => handleHistRescheduleDeadline(ticket))
-        }
+        // Empty out the action area completely for Ticket History
+        const actEl = document.getElementById('hist-modal-action')
+        actEl.innerHTML = ''
 
         // ── Footer info ──
         const footerInfo = document.getElementById('hist-modal-footer-info')
@@ -533,45 +494,6 @@
             footerInfo.innerHTML = `<p class="text-xs text-zinc-400 font-medium">Last updated <span class="text-zinc-600 font-semibold">${fmtDate(ticket.updated_at)}</span></p>`
         } else {
             footerInfo.innerHTML = ''
-        }
-
-        // ── Status action buttons ──
-        const actionEl = document.getElementById('hist-modal-action')
-        const next = getNextStatus(ticket)
-        const secondary = SECONDARY_STATUS[ticket.status]
-        const userRole = document.getElementById('user-role').value
-
-        if (next || secondary) {
-            if (userRole === 'editor') {
-                let btnsHTML = '<div class="flex items-center gap-2">'
-                if (secondary) {
-                    btnsHTML += `
-                        <button id="hist-secondary-btn" data-ticket-id="${ticket.id}" data-new-status="${secondary.value}"
-                            class="flex items-center gap-1.5 text-xs font-medium text-white ${secondary.color} rounded-lg px-3 py-2 transition-all cursor-pointer">
-                            <i class="fa-solid ${secondary.icon} text-xs"></i> ${secondary.label}
-                        </button>`
-                }
-                if (next) {
-                    btnsHTML += `
-                        <button id="hist-status-btn" data-ticket-id="${ticket.id}" data-new-status="${next.value}"
-                            class="flex items-center gap-1.5 text-xs font-medium text-white ${next.color} rounded-lg px-4 py-2 transition-all cursor-pointer">
-                            <i class="fa-solid ${next.icon} text-xs"></i> ${next.label}
-                        </button>`
-                }
-                btnsHTML += '</div>'
-                actionEl.innerHTML = btnsHTML
-
-                document.getElementById('hist-status-btn')?.addEventListener('click', handleHistStatusChange)
-                document.getElementById('hist-secondary-btn')?.addEventListener('click', handleHistStatusChange)
-            } else {
-                actionEl.innerHTML = ''
-            }
-        } else {
-            actionEl.innerHTML = `
-                <span class="text-xs font-semibold text-violet-500 bg-violet-50 border border-violet-200 rounded-lg px-3 py-1.5">
-                    <i class="fa-solid fa-check-double text-[9px]"></i> Final Status
-                </span>
-            `
         }
 
         startRowTimers()
@@ -932,8 +854,33 @@
 
                 // Remark body if available
                 let remarkHTML = ''
-                if (log.remark && log.remark.remark_body) {
-                    remarkHTML = `<p class="text-xs text-zinc-500 font-medium mt-1 bg-zinc-50 border border-zinc-200 rounded px-2 py-1 whitespace-pre-wrap">${log.remark.remark_body}</p>`
+                if (log.remark && (log.remark.remark_body || (log.remark.attachments && log.remark.attachments.length > 0))) {
+                    let attHTML = ''
+                    if (log.remark.attachments && log.remark.attachments.length > 0) {
+                        const imgExts = ['jpg','jpeg','png','gif','webp','bmp','svg']
+                        const imgs = log.remark.attachments.filter(a => imgExts.includes(a.image_path.split('.').pop().toLowerCase()))
+                        const others = log.remark.attachments.filter(a => !imgExts.includes(a.image_path.split('.').pop().toLowerCase()))
+                        attHTML = '<div class="flex flex-wrap gap-1.5 mt-2">'
+                        imgs.forEach(a => {
+                            attHTML += `<div class="img-lightbox-trigger group relative rounded-lg overflow-hidden border border-zinc-200 hover:border-indigo-300 transition-all w-16 h-16 flex-shrink-0 cursor-pointer" data-src="./${a.image_path}">
+                                <img src="./${a.image_path}" alt="" class="w-full h-full object-cover" />
+                                <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center"><i class="fa-solid fa-expand text-white text-[8px] opacity-0 group-hover:opacity-100 transition-opacity"></i></div>
+                            </div>`
+                        })
+                        others.forEach(a => {
+                            attHTML += `<a href="./${a.image_path}" target="_blank" class="flex items-center gap-1 bg-indigo-50 border border-indigo-200 rounded-lg px-2 py-1 hover:bg-indigo-100 transition-all">
+                                <i class="fa-solid fa-paperclip text-indigo-400 text-[8px]"></i>
+                                <span class="text-xs font-medium text-indigo-600 truncate max-w-24">${a.image_path.split('/').pop()}</span>
+                            </a>`
+                        })
+                        attHTML += '</div>'
+                    }
+
+                    remarkHTML = `
+                        <div class="mt-2 bg-zinc-50 border border-zinc-200 rounded-lg p-3">
+                            ${log.remark.remark_body ? `<p class="text-xs text-zinc-600 font-medium whitespace-pre-wrap">${log.remark.remark_body}</p>` : ''}
+                            ${attHTML}
+                        </div>`
                 }
 
                 html += `
@@ -1011,11 +958,15 @@
 
     function exportTickets(filter) {
         document.getElementById('export-dropdown').classList.add('hidden')
+        const status = document.getElementById('history-filter-status')?.value || 'all'
+        const creator = document.getElementById('history-filter-creator')?.value || 'all'
         const from = document.getElementById('export-date-from')?.value || ''
         const to   = document.getElementById('export-date-to')?.value || ''
         let url = `./API/export-tickets-api.php?filter=${filter}`
-        if (from) url += `&from=${from}`
-        if (to)   url += `&to=${to}`
+        if (status !== 'all') url += `&status=${status}`
+        if (creator !== 'all') url += `&creator=${encodeURIComponent(creator)}`
+        if (from) url += `&date_from=${from}`
+        if (to)   url += `&date_to=${to}`
         window.open(url, '_blank')
     }
 

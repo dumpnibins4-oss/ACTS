@@ -6,21 +6,35 @@
     try {
         require_once __DIR__ . '/../Connections/conn.php';
 
-        $filter   = $_GET['filter'] ?? 'all'; // 'all' or 'enroute'
-        $dateFrom = $_GET['from']   ?? '';
-        $dateTo   = $_GET['to']     ?? '';
+        $filter   = $_GET['filter'] ?? 'all'; // 'all', 'history', 'active', etc.
+        $status   = $_GET['status'] ?? '';
+        $creator  = $_GET['creator'] ?? '';
+        $dateFrom = $_GET['date_from'] ?? $_GET['from'] ?? '';
+        $dateTo   = $_GET['date_to']   ?? $_GET['to']   ?? '';
 
         // ── Build query ─────────────────────────────────────────────
         $where  = [];
         $params = [];
 
-        if ($filter === 'enroute') {
+        if ($filter === 'active') {
+            $where[] = "t.status NOT IN ('completed', 'closed', 'enroute')";
+        }
+
+        if ($status !== '' && $status !== 'all') {
+            $where[]  = "t.status = ?";
+            $params[] = $status;
+        } else if ($filter === 'enroute') {
+            // legacy fallback
             $where[]  = "t.status = ?";
             $params[] = 'enroute';
         } else if ($filter === 'completed') {
+            // legacy fallback
             $where[]  = "t.status = ?";
             $params[] = 'completed';
         }
+
+        // We handle creator filter in memory below because creator name is derived from EmployeeID
+
 
         if ($dateFrom !== '') {
             $where[]  = "CAST(t.created_at AS DATE) >= ?";
@@ -134,6 +148,12 @@
                 'status'            => $statusLabels[$ticket['status']] ?? $ticket['status'],
                 'remarks'           => $allRemarks,
             ];
+        }
+
+        if ($creator !== '') {
+            $rows = array_filter($rows, function($row) use ($creator) {
+                return $row['qa_pic'] === $creator;
+            });
         }
 
         // ── Generate Excel-compatible HTML ──────────────────────────

@@ -27,7 +27,8 @@
         }
 
         if ($filter === 'active') {
-            $where[] = "t.status NOT IN ('completed', 'closed', 'enroute')";
+            // $where[] = "t.status NOT IN ('completed', 'closed', 'enroute')";
+            $where[] = "t.status NOT IN ('completed')";
         } elseif ($filter === 'history') {
             // history = all tickets (no status filter)
         }
